@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:26:32 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/15 12:14:24 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/15 19:03:14 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ int main() {
 	{
 		parceConfFile parce;
 
-	parce.read_conf_file();
-	parce.fill_data();
+		parce.read_conf_file();
+		parce.fill_data();
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;

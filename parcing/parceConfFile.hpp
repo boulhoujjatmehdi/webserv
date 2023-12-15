@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/15 13:32:58 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/15 19:29:39 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,14 @@ class parceConfFile
 		string root;
 		vector<Location> location;
 		vector<string>::iterator it_data;
+		int location_nb;
+		int server_nb;
+		vector<parceConfFile> server;
 	public:
 		parceConfFile();
 		~parceConfFile();
 		void read_conf_file();
 		void fill_data();
 		void my_location();
+		void print_data();;
 };

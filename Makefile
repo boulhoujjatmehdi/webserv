@@ -1,4 +1,4 @@
-NAME = progName
+NAME = exxx
 
 SRC = $(wildcard ./parcing/*.cpp)
 
