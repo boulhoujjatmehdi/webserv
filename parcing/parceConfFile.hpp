@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/15 19:29:39 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/15 20:45:39 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,6 @@ class parceConfFile
 		~parceConfFile();
 		void read_conf_file();
 		void fill_data();
-		void my_location();
+		void my_location(parceConfFile &serv);
 		void print_data();;
 };
