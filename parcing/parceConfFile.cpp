@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/16 15:07:10 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/16 15:23:55 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,9 +114,14 @@ void parceConfFile::fill_data() {
 				str >> token;
 				if (my_trim(*it_data).empty())
 					continue;
-				if (token == "listen" && (str >> token)) {
-					serv.listen = token;
-					if (!(str >> token) || (token.empty() || token != ";"))
+				if (token == "listen") {
+					
+					while (str >> token) {
+						if (token.empty() || token == ";")
+							break;
+						serv.listen.push_back(token);
+					}
+					if (token != ";")
 						throw(std::runtime_error("Syntax Error ';'1"));
 				}
 				else if (token == "server_name" && (str >> token)) {
@@ -153,32 +158,22 @@ void parceConfFile::fill_data() {
 				else
 					throw(std::runtime_error("Syntax Error brackets"));
 			}
-			if (serv.listen.empty() || serv.server_name.empty() || serv.error_pages.size() == 0 || 
-			serv.client_body_size == -1 || serv.root.empty() || serv.location.size() == 0)
-				throw(std::runtime_error("Syntax Error in ONE of the attributes"));
-				
 			serv.location_nb = serv.location.size();
 			server.push_back(serv);
 		}
 	}
-	for (int i = 0;i < server_nb; i++) {
-	
-		for (int j = 0; (size_t)j < server[i].location.size();j++) {
-			if (server[i].location[j].path.empty() || server[i].location[j].default_file.empty() || 
-			server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_bin.empty() || 
-			server[i].location[j].cgi_extension.empty())
-				throw(std::runtime_error("Syntax Error in ONE of the location attributes"));
-				
-		}
-	}
+	check_ifdata_isnot_empty();
 	print_data();
 }
 
 void parceConfFile::print_data() {
 
 	for (int i = 0;i < server_nb; i++) {
-	
-		cout << "listen : " << server[i].listen << endl;
+		
+		cout << "listen : ";
+		for (size_t k = 0;k < server[i].listen.size() ;k++)
+			 cout << server[i].listen[k] << ", ";
+		cout << endl;
 		cout << "server_name : " << server[i].server_name << endl;
 		cout << "client_body_size : " << server[i].client_body_size << endl;
 		cout << "root : " << server[i].root << endl;
@@ -203,4 +198,21 @@ void parceConfFile::print_data() {
 		cout << "----------------------------------" << endl;
 	}
 	cout << "nb of servers : " << server_nb << endl;
+}
+
+void parceConfFile::check_ifdata_isnot_empty() {
+
+	for (int i = 0;i < server_nb; i++) {
+	
+		if (server[i].listen.size() == 0 || server[i].server_name.empty() || server[i].error_pages.size() == 0 || 
+			server[i].client_body_size == -1 || server[i].root.empty() || server[i].location.size() == 0)
+				throw(std::runtime_error("Syntax Error in ONE of the attributes"));
+		for (int j = 0; (size_t)j < server[i].location.size();j++) {
+			if (server[i].location[j].path.empty() || server[i].location[j].default_file.empty() || 
+			server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_bin.empty() || 
+			server[i].location[j].cgi_extension.empty())
+				throw(std::runtime_error("Syntax Error in ONE of the location attributes"));
+				
+		}
+	}
 }

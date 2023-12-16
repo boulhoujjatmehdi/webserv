@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/16 15:06:50 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/16 15:22:07 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Location {
 
 class Server {
 	public:
-		string listen;
+		vector<string> listen;
 		string server_name;
 		vector<string> error_pages;
 		double client_body_size;
@@ -62,5 +62,6 @@ class parceConfFile
 		void my_location(Server &serv);
 		void print_data();
 		string my_trim(string str);
+		void check_ifdata_isnot_empty();
 
 };
