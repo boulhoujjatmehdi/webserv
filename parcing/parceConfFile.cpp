@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/16 15:23:55 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/16 15:50:55 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,6 +163,7 @@ void parceConfFile::fill_data() {
 		}
 	}
 	check_ifdata_isnot_empty();
+	check_ifdata_is_valid();
 	print_data();
 }
 
@@ -202,6 +203,8 @@ void parceConfFile::print_data() {
 
 void parceConfFile::check_ifdata_isnot_empty() {
 
+	if (server_nb == 0)
+		throw(std::runtime_error("No Server Available"));
 	for (int i = 0;i < server_nb; i++) {
 	
 		if (server[i].listen.size() == 0 || server[i].server_name.empty() || server[i].error_pages.size() == 0 || 
@@ -215,4 +218,27 @@ void parceConfFile::check_ifdata_isnot_empty() {
 				
 		}
 	}
+}
+
+void parceConfFile::check_ifdata_is_valid() {
+
+	char *tmp;
+	for (int i = 0;i < server_nb; i++) {
+	
+		for (size_t k = 0; k < server[i].listen.size();k++) {
+			double nb = std::strtod((server[i].listen[k]).c_str(), &tmp);
+			(void)nb;
+			if (!string(tmp).empty())
+				throw(std::runtime_error("Syntax Error in listen Port"));
+		}
+		for (size_t j = 0; j < server[i].location.size();j++) {
+			
+			for (size_t l = 0;l < server[i].location[j].methods.size();l++) {
+				if (server[i].location[j].methods[l] != "GET" && server[i].location[j].methods[l] != "POST" && 
+				server[i].location[j].methods[l] != "DELETE")
+					throw(std::runtime_error("Syntax Error in the location METHODS"));
+			}	
+		}
+	}
+	
 }
