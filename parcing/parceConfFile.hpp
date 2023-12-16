@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/15 20:45:39 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/16 15:06:50 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,25 +34,33 @@ class Location {
 		~Location() {}
 };
 
-
-class parceConfFile
-{
-		vector<string> data;
+class Server {
+	public:
 		string listen;
 		string server_name;
 		vector<string> error_pages;
 		double client_body_size;
 		string root;
 		vector<Location> location;
-		vector<string>::iterator it_data;
 		int location_nb;
+		
+		Server();
+		~Server();
+};
+
+class parceConfFile
+{
+		vector<string> data;
+		vector<string>::iterator it_data;
 		int server_nb;
-		vector<parceConfFile> server;
+		vector<Server> server;
 	public:
 		parceConfFile();
 		~parceConfFile();
 		void read_conf_file();
 		void fill_data();
-		void my_location(parceConfFile &serv);
-		void print_data();;
+		void my_location(Server &serv);
+		void print_data();
+		string my_trim(string str);
+
 };
