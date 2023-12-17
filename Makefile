@@ -1,27 +1,34 @@
-NAME = progName
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/12/16 11:15:12 by aachfenn          #+#    #+#              #
+#    Updated: 2023/12/16 11:15:56 by aachfenn         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-SRC = $(wildcard ./SRC/*.cpp)
+SRC     = $(wildcard parcing/*.cpp)
 
-HED =  
+CXXFLAGS   = -Wall -Wextra -Werror -std=c++98
 
-CXX = c++ 
-CXXFLAGS= -std=c++98 -Wall -Werror -Wextra
-OBJ = $(SRC:.cpp=.o)
+OBJS    = ${SRC:.cpp=.o}
 
-all: $(NAME)
+RM      = rm -f
 
+NAME    = exxx
 
+${NAME} :	${OBJS} $(wildcard *.hpp)
+		c++ ${CXXFLAGS} ${OBJS} -o ${NAME}
 
-$(NAME): $(OBJ) 
-		$(CXX) $(CXXFLAGS) $(OBJ) -o $@
+all     : ${NAME}
 
-clean:
-		rm -rf $(OBJ)
+clean   :
+		${RM} ${OBJS}
 
-fclean: clean
-		rm -rf $(NAME)
+fclean  : clean
+		${RM} ${NAME}
 
-re:     fclean all
-
-run:all
-		./$(NAME)
+re      : fclean all
