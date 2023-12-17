@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/17 15:34:43 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/17 15:37:20 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,5 +242,5 @@ void parceConfFile::check_ifdata_is_valid() {
 				throw(std::runtime_error("Syntax Error in the location METHODS"));
 		}
 	}
-	
+	 
 }
