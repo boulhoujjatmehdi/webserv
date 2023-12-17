@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/16 15:50:55 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/17 15:34:43 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,17 +227,19 @@ void parceConfFile::check_ifdata_is_valid() {
 	
 		for (size_t k = 0; k < server[i].listen.size();k++) {
 			double nb = std::strtod((server[i].listen[k]).c_str(), &tmp);
-			(void)nb;
-			if (!string(tmp).empty())
+			if (!string(tmp).empty() || nb < 0)
 				throw(std::runtime_error("Syntax Error in listen Port"));
 		}
 		for (size_t j = 0; j < server[i].location.size();j++) {
 			
+			int check = 0;
 			for (size_t l = 0;l < server[i].location[j].methods.size();l++) {
-				if (server[i].location[j].methods[l] != "GET" && server[i].location[j].methods[l] != "POST" && 
-				server[i].location[j].methods[l] != "DELETE")
-					throw(std::runtime_error("Syntax Error in the location METHODS"));
+				if (server[i].location[j].methods[l] == "GET" || server[i].location[j].methods[l] == "POST" || 
+				server[i].location[j].methods[l] == "DELETE")
+					check++;
 			}	
+			if (check != 3)
+				throw(std::runtime_error("Syntax Error in the location METHODS"));
 		}
 	}
 	
