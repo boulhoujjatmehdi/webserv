@@ -1,5 +1,5 @@
-
 #include "../INC/server.hpp"
+
 
 int main()
 {
@@ -10,7 +10,7 @@ int main()
         return 1;
     }
     struct sockaddr_in address;
-    socklen_t socket_lenght  = sizeof(address);
+    // socklen_t socket_lenght  = sizeof(address);
     bzero(&address, sizeof(struct sockaddr_in));
     address.sin_family = AF_INET;
     address.sin_port = htons(PORT);
@@ -22,29 +22,65 @@ int main()
         return 1;
     }
 
-    //listen to incomming connections
     if(listen(sockfd, 10) == -1)
     {
         cerr << "Failed to listen"<< endl;
         return 1;        
     }
 
+    fd_set theFdSet[NBOFCLIENTS];
+    FD_ZERO(theFdSet);
+    fd_vec.push_back(sockfd);
+    FD_SET(sockfd, theFdSet);
+    cout << "max is :" << getMaxFd()<< endl;
     while (1)
     {
-        cout << "waiting for new connections"<< endl;
-        int new_socket;
-        if((new_socket = accept(sockfd, (struct sockaddr* )&address, (socklen_t* )&socket_lenght))==-1)
+        select(getMaxFd()+1, theFdSet, NULL, NULL, NULL);
+        if(FD_ISSET(sockfd, theFdSet))
         {
-            cerr << "failed to accept a new connection"<< endl;
-            return 1;
+            cout << "new connection to setup"<< endl;
+            int datasocket = accept(sockfd, NULL, NULL);
+            if(datasocket == -1)
+            {
+                cerr << "accept error" << endl;
+                exit(1);
+            }
+            cerr << "connection accepted -_-"<<endl;
         }
-        char buffer[1024] = {0};
-        int nb_readed = read(new_socket, buffer, 1024);
-        the request
-        write()
+        else
+        {
+            int commSocket;
+            char buffer[1024];
+            for (int i = 0; i < NBOFCLIENTS; i++)
+            {
+                if(FD_ISSET(fd_vec.at(i), theFdSet))
+                {
+                    string str;
+                    commSocket = fd_vec.at(i);
+                    bzero(buffer, 1024);
+                    cout << "waiting for data from client"<< endl;
+                    int size_readed = read(commSocket, buffer, 1024);
+                    if(size_readed == -1)
+                    {
+                        cerr << "error at reading from socket"<< endl;
+                        exit(1);
+                    }
+                    int data;
+                    memcpy(&data, buffer, sizeof(int));
+                    
+                    if(data == 0)
+                    {
+                        
+                    }
+                    else
+                    {
+                        str = str + string(buffer);
+                    }
+
+                }
+            }
+        }
     }
-    
 
-
-
+    return 0;
 }
