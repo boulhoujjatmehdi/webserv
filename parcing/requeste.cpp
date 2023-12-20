@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 14:22:22 by rennatiq          #+#    #+#             */
-/*   Updated: 2023/12/20 21:20:59 by rennatiq         ###   ########.fr       */
+/*   Updated: 2023/12/20 21:34:22 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,24 @@ void requeste::parsing_requeste_post()
         host.first = tmp_head.substr(0, tmp_head.find(':'));
         host.second = tmp_head.substr(tmp_head.find(':') + 1, tmp_head.size());
     }
+    // body part off request
+    // if (!body.empty())
+    //     {
+        //     std::string tmp_body;
+    //         int start = 0;
+    //         int end = 0;
+    //         for (;body[end]; end++)
+    //         {
+    //             if (body[end] == '&')
+    //             {
+    //                 tmp_data2 = body.substr(start, end- start);
+    //                 data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
+    //                 start = end + 1; 
+    //             }
+    //         }
+    //         tmp_data2 = body.substr(start, end- start);
+    //         data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
+    //     }
 }
 
 void requeste::parsing_requeste()
