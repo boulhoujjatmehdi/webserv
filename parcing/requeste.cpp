@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 14:22:22 by rennatiq          #+#    #+#             */
-/*   Updated: 2023/12/20 21:34:22 by rennatiq         ###   ########.fr       */
+/*   Updated: 2023/12/20 21:36:16 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,13 @@ void requeste::parsing_requeste_post()
         host.first = tmp_head.substr(0, tmp_head.find(':'));
         host.second = tmp_head.substr(tmp_head.find(':') + 1, tmp_head.size());
     }
-    // body part off request
+    // 
+    // 
+    // 
+    // hada khas b3da tkon body main orta singh magiz ilan mach ati ghika asat parsa
+    // 
+    // 
+    // 
     // if (!body.empty())
     //     {
         //     std::string tmp_body;
