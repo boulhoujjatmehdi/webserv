@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 14:39:58 by rennatiq          #+#    #+#             */
-/*   Updated: 2023/12/20 21:19:03 by rennatiq         ###   ########.fr       */
+/*   Updated: 2023/12/20 22:37:23 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,13 @@ public:
 
     requeste();
     ~requeste();
-
+//parsing
     void parsing_requeste_get();
     void parsing_requeste_post();
     void parsing_requeste();
+
+
+    
 };
 
 

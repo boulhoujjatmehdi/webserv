@@ -6,11 +6,12 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 14:22:22 by rennatiq          #+#    #+#             */
-/*   Updated: 2023/12/20 21:36:16 by rennatiq         ###   ########.fr       */
+/*   Updated: 2023/12/20 22:39:03 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "requeste.hpp"
+#include "errorhundeling.hpp"
 
 requeste::requeste()
 {
@@ -35,50 +36,51 @@ void requeste::parsing_requeste_get()
             tmp_url = head;
         if (str >> head)
             http_type = head;
+        for(int i = 1; i < request.size(); i++)
+        {
+            std::istringstream str(request[i]);
+            if (str >> head)
+            {
+                if (head == "Host:")
+                    str >> tmp_head;
+                if (head == "Connection:")
+                    str >> connection;
+                if (head == "Referer:")
+                    str >> referer;
+            }
+        }
+        if(!tmp_head.empty())
+        {
+            host.first = tmp_head.substr(0, tmp_head.find(':'));
+            host.second = tmp_head.substr(tmp_head.find(':') + 1, tmp_head.size());
+        }
+        if (!tmp_url.empty())
+        {
+            path = tmp_url.substr(0, tmp_url.find('?'));
+            std::string tmp_data = tmp_url.substr(tmp_url.find('?') + 1, tmp_url.size());
+            std::string tmp_data2;
+            if (!tmp_data.empty())
+            {
+                int start = 0;
+                int end = 0;
+                for (;tmp_data[end]; end++)
+                {
+                    if (tmp_data[end] == '&')
+                    {
+                        tmp_data2 = tmp_data.substr(start, end- start);
+                        data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
+                        start = end + 1; 
+                    }
+                }
+                tmp_data2 = tmp_data.substr(start, end- start);
+                data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
+            }
+            
+        }
+        //! $ & ' ( ) * + , ; =  ||| : / ? # [ ] @ ||| - . _ ~
     }
     else
         std::cout << "request empty" << std::endl;
-    for(int i = 1; i < request.size(); i++)
-    {
-        std::istringstream str(request[i]);
-        if (str >> head)
-        {
-            if (head == "Host:")
-                str >> tmp_head;
-            if (head == "Connection:")
-                str >> connection;
-            if (head == "Referer:")
-                str >> referer;
-        }
-    }
-    if(!tmp_head.empty())
-    {
-        host.first = tmp_head.substr(0, tmp_head.find(':'));
-        host.second = tmp_head.substr(tmp_head.find(':') + 1, tmp_head.size());
-    }
-    if (!tmp_url.empty())
-    {
-        path = tmp_url.substr(0, tmp_url.find('?'));
-        std::string tmp_data = tmp_url.substr(tmp_url.find('?') + 1, tmp_url.size());
-        std::string tmp_data2;
-        if (!tmp_data.empty())
-        {
-            int start = 0;
-            int end = 0;
-            for (;tmp_data[end]; end++)
-            {
-                if (tmp_data[end] == '&')
-                {
-                    tmp_data2 = tmp_data.substr(start, end- start);
-                    data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
-                    start = end + 1; 
-                }
-            }
-            tmp_data2 = tmp_data.substr(start, end- start);
-            data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
-        }
-        
-    }
 }
 void requeste::parsing_requeste_post()
 {
@@ -95,32 +97,29 @@ void requeste::parsing_requeste_post()
             path = head;
         if (str >> head)
             http_type = head;
-    }
-    else
-        std::cout << "request empty" << std::endl;
-    for(int i = 1; i < request.size(); i++)
-    {
-        std::istringstream str(request[i]);
-        if (str >> head)
+        for(int i = 1; i < request.size(); i++)
         {
-            if (head == "Host:")
-                str >> tmp_head;
-            if (head == "Connection:")
-                str >> connection;
-            if (head == "Referer:")
-                str >> referer;
-            if (head == "Content-Length:")
-                str >> content_length;
-            if (head == "Origin:")
-                str >> origin;
-            
+            std::istringstream str(request[i]);
+            if (str >> head)
+            {
+                if (head == "Host:")
+                    str >> tmp_head;
+                if (head == "Connection:")
+                    str >> connection;
+                if (head == "Referer:")
+                    str >> referer;
+                if (head == "Content-Length:")
+                    str >> content_length;
+                if (head == "Origin:")
+                    str >> origin;
+                
+            }
         }
-    }
-    if(!tmp_head.empty())
-    {
-        host.first = tmp_head.substr(0, tmp_head.find(':'));
-        host.second = tmp_head.substr(tmp_head.find(':') + 1, tmp_head.size());
-    }
+        if(!tmp_head.empty())
+        {
+            host.first = tmp_head.substr(0, tmp_head.find(':'));
+            host.second = tmp_head.substr(tmp_head.find(':') + 1, tmp_head.size());
+        }
     // 
     // 
     // 
@@ -145,6 +144,9 @@ void requeste::parsing_requeste_post()
     //         tmp_data2 = body.substr(start, end- start);
     //         data[tmp_data2.substr(0, tmp_data2.find('='))] = tmp_data2.substr(tmp_data2.find('=') + 1, tmp_data2.size());
     //     }
+    }
+    else
+        std::cout << "request empty" << std::endl;
 }
 
 void requeste::parsing_requeste()
@@ -164,6 +166,10 @@ void requeste::parsing_requeste()
     else
         std::cout << "request empty" << std::endl;
 }
+
+
+
+
 
 int main()
 {
@@ -190,4 +196,10 @@ int main()
     std::cout << "referer: " << reque.referer << std::endl;
     std::cout << "content_length: " << reque.content_length << std::endl;
     std::cout << "origin: " << reque.origin << std::endl;
+
+    // if (check_request_form())
+    //     std::cout << "Bad form\n";
+    // else
+    //     std::cout << "Good form\n";
+        
 }
