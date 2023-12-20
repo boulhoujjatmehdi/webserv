@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/16 15:37:37 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/19 14:54:53 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,3 +66,5 @@ class parceConfFile
 		void check_ifdata_is_valid();
 
 };
+
+void parce_conf_file();

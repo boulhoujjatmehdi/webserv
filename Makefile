@@ -6,11 +6,12 @@
 #    By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/16 11:15:12 by aachfenn          #+#    #+#              #
-#    Updated: 2023/12/16 11:15:56 by aachfenn         ###   ########.fr        #
+#    Updated: 2023/12/19 14:25:50 by aachfenn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC     = $(wildcard parcing/*.cpp)
+# SRC     = $(wildcard parcing/*.cpp)
+SRC     = $(wildcard **/*.cpp)
 
 CXXFLAGS   = -Wall -Wextra -Werror -std=c++98
 
