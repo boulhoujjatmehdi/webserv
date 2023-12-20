@@ -12,7 +12,7 @@
 
 #include "../parcing/parceConfFile.hpp"
 
-#define PORT 8880
+#define PORT 8080
 
 using std::cout;
 using std::cerr;
