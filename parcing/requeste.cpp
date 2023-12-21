@@ -6,11 +6,10 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 14:22:22 by rennatiq          #+#    #+#             */
-/*   Updated: 2023/12/20 22:39:03 by rennatiq         ###   ########.fr       */
+/*   Updated: 2023/12/21 12:55:03 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "requeste.hpp"
 #include "errorhundeling.hpp"
 
 requeste::requeste()
@@ -20,6 +19,44 @@ requeste::requeste()
 requeste::~requeste()
 {
 }
+
+std::string requeste::get_methode()
+{
+    return (methode);
+}
+std::string requeste::get_path()
+{
+    return (path);
+}
+std::string requeste::get_http_type()
+{
+    return (http_type);
+}
+std::pair<std::string, std::string> requeste::get_host()
+{
+    return (host);
+}
+std::string requeste::get_connection()
+{
+    return (connection);
+}
+std::string requeste::get_referer()
+{
+    return (referer);
+}
+std::map<std::string, std::string> requeste::get_data()
+{
+    return (data);
+}
+std::string requeste::get_content_length()
+{
+    return (content_length);
+}
+std::string requeste::get_origin()
+{
+    return (origin);
+}
+
 
 void requeste::parsing_requeste_get()
 {
@@ -182,24 +219,20 @@ int main()
     }
 
     reque.parsing_requeste();
-    std::cout << "methode: " << reque.methode << std::endl;
-    std::cout << "path: " << reque.path << std::endl;
+    std::cout << "methode: " << reque.get_methode() << std::endl;
+    std::cout << "path: " << reque.get_path() << std::endl;
     std::cout << "data: ";
-    std::map<std::string, std::string>::iterator it = reque.data.begin();
-    for (;it != reque.data.end();it++) {
+    std::map<std::string, std::string> data = reque.get_data();
+    std::map<std::string, std::string>::iterator it = data.begin();
+    for (;it != data.end();it++) {
         std::cout << it->first << ": " << it->second << " || ";
     }
     std::cout  << std::endl;
-    std::cout << "http_type: " << reque.http_type << std::endl;
-    std::cout << "host: " << reque.host.first << " || " << reque.host.second << std::endl;
-    std::cout << "connection: " << reque.connection << std::endl;
-    std::cout << "referer: " << reque.referer << std::endl;
-    std::cout << "content_length: " << reque.content_length << std::endl;
-    std::cout << "origin: " << reque.origin << std::endl;
+    std::cout << "http_type: " << reque.get_http_type() << std::endl;
+    std::cout << "host: " << reque.get_host().first << " || " << reque.get_host().second << std::endl;
+    std::cout << "connection: " << reque.get_connection() << std::endl;
+    std::cout << "referer: " << reque.get_referer() << std::endl;
+    std::cout << "content_length: " << reque.get_content_length() << std::endl;
+    std::cout << "origin: " << reque.get_origin() << std::endl;
 
-    // if (check_request_form())
-    //     std::cout << "Bad form\n";
-    // else
-    //     std::cout << "Good form\n";
-        
 }
