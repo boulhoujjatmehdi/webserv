@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 09:10:43 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/20 13:22:22 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/22 09:35:56 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,54 +55,63 @@ int main() {
 		}
 	}
 
-	struct pollfd fds[listen_size];
+	// struct pollfd fds[listen_size];
+	std::vector<pollfd> fds;
 	for (int l = 0;l <listen_size;l++) {
 
-		fds[l].fd = listenSocket[l];
-		fds[l].events = POLLIN;
+		pollfd pfd = { listenSocket[l], POLLIN, 0 };
+		fds.push_back(pfd);
+		// fds[l].fd = listenSocket[l];
+		// fds[l].events = POLLIN;
 	}
 
 	sockaddr_in clientAddress;
 	socklen_t clientAddressLength = sizeof(clientAddress);
 	int clientSocket;
 
+	cout << "--------waiting for connections--------" << endl;
 	for (;;) {
-		int ret = poll(fds, listen_size, -1);
-
+		// pollfd pfd = { listenSocket[listen_size], POLLIN, 0 };
+		// fds.push_back(pfd);
+		int ret = poll(fds.data(), listen_size, -1);
+		cout << "poll triggered"<< endl;
 		if (ret > 0) {
 			
-			for (int i = 0; i < listen_size;i++) {
+			for (size_t i = 0; i < fds.size();i++) {
 				if (fds[i].revents & POLLIN) {
 					clientSocket = accept(listenSocket[i], (struct sockaddr*)&clientAddress, &clientAddressLength);
 					if (clientSocket < 0) {
 						cout << "Accept failed";
 						return 1;
 					}
-	
-					char buffer[1024];
-					char buf[] = "HTTP/1.1 200 OK\r\n"
-					             "Content-Type: text/html\r\n"
-					             "Connection: close\r\n"
-					             "\r\n"
-					             "<!DOCTYPE html>"
-					             "<html>"
-					             "<head>"
-					             "    <title>My Title</title>"
-					             "</head>"
-					             "<body>"
-					             "    <h1>Hello, World!</h1>"
-					             "</body>"
-					             "</html>"
-								 "\r\n\r\n";
-					ssize_t recvSize;
-					while ((recvSize = recv(clientSocket, buffer, sizeof(buffer) - 1, 0)) > 0) {
-						cout << recvSize << endl;
+					pollfd pfd = { clientSocket, POLLIN, 0 };
+					fds.push_back(pfd);
+					cout << fds.size() << endl;
+					// int flags = fcntl(clientSocket, F_GETFL, 0);
+					// fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
+					char buffer[50];
+					// string tmp = buffer;
+					// string contain;
+					// // if (tmp.length() < 4)
+					// // 	return 1;
+					// cout << tmp.substr(tmp.length() - 4, 4) << endl;
+					// if (tmp.substr(tmp.length() - 4, 4) == "\r\n\r\n") {
+						
+						// char buf[] = "HTTP/1.1 200 OK\r\nd""Content-Type: text/html\r\n""Connection: close\r\n""\r\n""<!DOCTYPE html>""<html>""<head>""    <title>My Title</title>""</head>""<body>""    <h1>Hello, World!</h1>""    <h1>Hello, World!</h1>""    <h1>Hello, World!</h1>""    <h1>Hello, World!</h1>""</body>""</html>""\r\n\r\n";
+							//
+							//
+						ssize_t recvSize;
+						recvSize = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
 						buffer[recvSize] = '\0';
+						cout << "-----------\n";
 						std::cout << buffer << std::endl;
-						send(clientSocket, buf, strlen(buf), 0);
+						cout << "-----------\n";
+						// send(clientSocket, buf, strlen(buf), 0);
 						close(clientSocket);
-						// close(listenSocket[i]);
-					}
+					// }
+					// else
+					// 	contain += string(buffer);
+					break;
 				}
 			}
 		} else if (ret < 0) {

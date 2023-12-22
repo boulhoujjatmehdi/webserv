@@ -11,14 +11,3 @@ Sec-Fetch-Dest: document
 Sec-Fetch-Mode: navigate
 Sec-Fetch-Site: same-origin
 Sec-Fetch-User: ?1
-
-
-
-1) initialise window socket
-2) create a socket
-3) bind the socket to an ip address and port
-4) tell winsock the socket is for listening 
-5) wait for a connection
-6) close listening socket
-7) loop to echo the message back to the client
-8) close the socket
