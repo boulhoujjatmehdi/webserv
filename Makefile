@@ -1,8 +1,8 @@
 NAME = progName
 
 SRC = $(wildcard ./SRC/*.cpp)
+HED = $(wildcard ./INC/*.hpp)
 
-HED =  
 
 CXX = c++ 
 CXXFLAGS= -std=c++98 -Wall -Werror -Wextra
@@ -12,7 +12,7 @@ all: $(NAME)
 
 
 
-$(NAME): $(OBJ) 
+$(NAME): $(OBJ) $(HED)
 		$(CXX) $(CXXFLAGS) $(OBJ) -o $@
 
 clean:
