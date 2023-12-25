@@ -90,42 +90,45 @@ int main()
 	fd_set theFdSetWrite[NBOFCLIENTS];
 	FD_ZERO(theFdSetRead);
 	fdMapRead[sockfd] = httpRequest();
-	cout << "max is :" << getMaxFd()<< endl;
 	int count_send = 0;
-
-
 
 	while (1)
 	{
 		debute:
 		refresh_fd_set(theFdSetRead, theFdSetWrite);
-		
 		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, NULL);
-		cout << "***********************************"<< getMaxFd()+1<< endl;
+		// cout << "***********************************"<< endl;//test
 		// cout << "select triggered"<< endl;	
 		if(FD_ISSET(sockfd, theFdSetRead))
 		{
 			// cout << "new connection to setup"<< endl;
 			int datasocket = accept(sockfd, NULL, NULL);
-				// Set the socket to non-blocking mode
-				int flags = fcntl(datasocket, F_GETFL, 0);
-				if (flags == -1) {
-					cerr << "Can't get flags for socket" << endl;
-					return -1;
-				}
-
-				flags |= O_NONBLOCK;
-				if (fcntl(datasocket, F_SETFL, flags) == -1) {
-					cerr << "Can't set socket to non-blocking mode" << endl;
-					return -1;
-				}
-				//************
 			if(datasocket == -1)
 			{
 				cerr << "accept error" << endl;
 				exit(1);
 			}
-			cerr << "connection accepted -_-"<<endl;
+			int optval =1 ;
+			if(setsockopt(datasocket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1)
+			{
+				cerr << "set Socket Options error"<<endl;
+				exit(1);
+			}
+			// else
+			// {
+			// 	// cout << "socket " << datasocket << " is on nosigpipe" << endl;//test
+			// }
+			// Set the socket to non-blocking mode
+			int flags = fcntl(datasocket, F_GETFL, 0);
+			if (flags == -1) {
+				cerr << "Can't get flags for socket" << endl;
+				return -1;
+			}
+			flags |= O_NONBLOCK;
+			if (fcntl(datasocket, F_SETFL, flags) == -1) {
+				cerr << "Can't set socket to non-blocking mode" << endl;
+				return -1;
+			}
 			fdMapRead[datasocket] = httpRequest(datasocket, "");
 			refresh_fd_set(theFdSetRead, theFdSetWrite);
 			
@@ -143,9 +146,7 @@ int main()
 					
 					commSocket = it->first;
 					bzero(buffer, 200);
-					cout << "waiting for data from client :"<< it->first << endl;
 					int size_readed = recv(commSocket, buffer, 200, 0);
-					cout << "readed : "<< size_readed<< endl;
 					if(size_readed == -1)
 					{
 						cerr << "error at reading from socket"<< endl;
@@ -161,15 +162,14 @@ int main()
 					}
 					else 
 					{
-						cout << "-------------------" << endl;
+						// cout << "-------------------" << endl;
 						it->second.request = it->second.request + string(buffer);
 						if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
 						{
 							cout << "full request received!!!"<<endl;
-							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "./oxer-html/about.html")));
-							// fdMapWrite[commSocket] = httpResponse(it->second, "./oxer-html/index.html");
+							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "./oxer-html/index.html")));
 							fdMapRead.erase(commSocket);
-							refresh_fd_set(theFdSetRead, theFdSetWrite);
+							refresh_fd_set(theFdSetRead, theFdSetWrite); //TODO: OPTIMIZE 
 							goto debute;
 						}
 					}
@@ -186,8 +186,8 @@ int main()
 								close(commSocket);
 								count_send = 0;//delete
 								
+								// cout << "closed" << commSocket<<endl;//test
 								fdMapWrite.erase(commSocket);
-								cout << "closed"<<endl;
 								break;
 
 							}

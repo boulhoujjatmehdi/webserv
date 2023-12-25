@@ -1,6 +1,8 @@
 #pragma once
 
 #include "httpRequest.hpp"
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #define BUFFER_SIZE 1024
 
@@ -24,6 +26,7 @@ public:
     httpResponse(const httpResponse& obj)
     {
         socket = obj.socket;
+        header_sent = obj.header_sent;
         header = obj.header;
         request = obj.request;
         filename = obj.filename;
@@ -33,24 +36,9 @@ public:
         file.seekg(0);
     }
 
-    // httpResponse& operator=(const httpResponse& obj)
-    // {
-    //     // cout << "COPY ass CALLED !!"<< endl;
-    //     socket = obj.socket;
-    //     request = obj.request;
-    //     filename = obj.filename;
-    //     file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-    //     filePos = 0;
-    //     fileSize = file.tellg();
-    //     file.seekg(0);
-    //     return *this;
-    // }
-
     httpResponse(const httpRequest& obj, string filename): httpRequest(obj), filename(filename), header_sent(0)
     {
-        // cout << "was here1" << endl;
         header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-        // cout << "was here2" << endl;
     }
     httpResponse()
     {
@@ -67,13 +55,21 @@ public:
         std::istringstream strm(request);
         string str;
         strm >> str;
-        sleep(1);
         if(!file.is_open())
             return 1; //TODO: SET A SPECIFIC ERROR IN FUTURE
+        // cout << "header_sent : " << header_sent<< endl << " header.size(): " << header.size() << endl;
         if(header_sent < header.size())
         {
-            header_sent += send(socket, header.c_str(), header.size(), 0);
-            cout << "send HEADER to "<< socket << endl;
+            int sent_size = send(socket, header.c_str() + header_sent, header.size() - header_sent , 0);
+
+            if(sent_size == -1)
+            {
+                cout << "send header errno = " << errno << endl;
+                cerr << "/////////Send header Error" << endl;
+            }
+
+            header_sent += sent_size;
+            // cout << "send HEADER to "<< socket << " with size = (" << sent_size << ")" << endl;//test
             
             return 0;
         }
@@ -82,14 +78,17 @@ public:
         if(readedData > 0)
         {
             int sentData = send(socket, buffer, readedData, 0);
+            if(sentData == -1)
+            {
+                return 1;
+            }
 			if(sentData < readedData)
                 file.seekg(sentData - readedData, std::ios_base::cur);
-            cout << "send Chunk to "<< socket << endl;
+            // cout << "send Chunk to "<< socket << " with size = (" << sentData << ")" << endl;//test
             return 0;
         }
         else
         {
-            cout << "clear"<< endl;
             return 1;   
         }
         
