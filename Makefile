@@ -10,9 +10,12 @@ OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
 
+%.o:%.cpp $(HED)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 
-$(NAME): $(OBJ) $(HED)
+
+$(NAME): $(OBJ) 
 		$(CXX) $(CXXFLAGS) $(OBJ) -o $@
 
 clean:

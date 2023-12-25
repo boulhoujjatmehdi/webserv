@@ -9,6 +9,7 @@
 #include <sys/select.h>
 #include <fcntl.h>
 #include <fstream>
+#include <sstream>
 
 #define PORT1 8080
 

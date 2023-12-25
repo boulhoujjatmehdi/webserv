@@ -5,7 +5,7 @@ int getMaxFd()
 	int tmp = -1;
     if(fdMapRead.size() >= 1)
 	{
-		//TODO: TRY TO USE RBEGIN() INSTEAD OF END()
+		//PARSE: TRY TO USE RBEGIN() INSTEAD OF END
 		std::map<int, httpRequest>::iterator it = fdMapRead.end();
 		it--;
 		if( it->first > tmp)
@@ -99,10 +99,10 @@ int main()
 	{
 		debute:
 		refresh_fd_set(theFdSetRead, theFdSetWrite);
-		cout << "waiting to select trigger "<< getMaxFd()+1<< endl;
 		
 		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, NULL);
-		cout << "select triggered"<< endl;	
+		cout << "***********************************"<< getMaxFd()+1<< endl;
+		// cout << "select triggered"<< endl;	
 		if(FD_ISSET(sockfd, theFdSetRead))
 		{
 			// cout << "new connection to setup"<< endl;
@@ -126,7 +126,7 @@ int main()
 				exit(1);
 			}
 			cerr << "connection accepted -_-"<<endl;
-			fdMapRead[datasocket] = httpRequest();
+			fdMapRead[datasocket] = httpRequest(datasocket, "");
 			refresh_fd_set(theFdSetRead, theFdSetWrite);
 			
 		}
@@ -165,12 +165,12 @@ int main()
 						it->second.request = it->second.request + string(buffer);
 						if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
 						{
-							cout << "full request reveived!!!"<<endl;
-							fdMapWrite[commSocket] = httpResponse(it->second);
+							cout << "full request received!!!"<<endl;
+							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "./oxer-html/about.html")));
+							// fdMapWrite[commSocket] = httpResponse(it->second, "./oxer-html/index.html");
 							fdMapRead.erase(commSocket);
 							refresh_fd_set(theFdSetRead, theFdSetWrite);
 							goto debute;
-
 						}
 					}
 				}
@@ -179,42 +179,19 @@ int main()
 			{
 				if(FD_ISSET(it->first, theFdSetWrite))
 				{
-					commSocket = it->first;
-					cout << (it->second.request.substr(0, 50))<< endl;
-							string httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n"
-												"<!DOCTYPE html>\n"
-												"<html> \n"
-												"<body>\n"
-												"<form action=\"/action_page.php\" method=\"get\">\n"
-												"  First name:<br>\n"
-												"  <input type=\"text\" name=\"firstname\" value=\"Mickey\">\n"
-												"  <br>\n"
-												"  Last name:<br>\n"
-												"  <input type=\"text\" name=\"lastname\" value=\"Mouse\">\n"
-												"  <br><br>\n"
-												"  <input type=\"submit\" value=\"Submit\">\n"
-												"</form> \n"
-												"</body>\n"
-												"</html>\n";
-												
+					commSocket = it->first;			
 							full_request.clear();
-							int test = send(commSocket, httpResponse.c_str()+ (120 * count_send), 120, 0);
-							cout <<endl<< count_send << " is sent"<< endl;
-							if(test == -1)
+							if (it->second.sendChunk())
 							{
-								cout << "sending error "<< test << endl;
-								exit(11);
-							}
-							if(count_send++ >= 2)
-							{
-								// cout << "+++++1" << endl;
 								close(commSocket);
-								count_send = 0;
+								count_send = 0;//delete
 								
 								fdMapWrite.erase(commSocket);
-								refresh_fd_set(theFdSetRead, theFdSetWrite);
+								cout << "closed"<<endl;
 								break;
+
 							}
+
 				}
 			}
 		}
