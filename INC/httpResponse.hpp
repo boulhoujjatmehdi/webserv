@@ -17,6 +17,7 @@ public:
     int last_send;
     std::streamsize filePos;
     std::streamsize fileSize;
+    int x;
 
     const std::ifstream& getFile()const
     {
@@ -25,6 +26,7 @@ public:
     //copy constructor
     httpResponse(const httpResponse& obj)
     {
+        x = obj.x;
         socket = obj.socket;
         header_sent = obj.header_sent;
         header = obj.header;
@@ -34,11 +36,18 @@ public:
         filePos = 0;
         fileSize = file.tellg();
         file.seekg(0);
+
+        std::stringstream ss;
+        ss << fileSize;
+        // header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Encoding: UTF-8\r\nContent-Length: " + ss.str() +  "\r\n\r\n";
+
     }
 
-    httpResponse(const httpRequest& obj, string filename): httpRequest(obj), filename(filename), header_sent(0)
+    httpResponse(const httpRequest& obj, string filename): httpRequest(obj), filename(filename), header_sent(0), x(0)
     {
-        header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+        // header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\nContent-Lenght: "
+        header = "";
     }
     httpResponse()
     {
@@ -52,6 +61,7 @@ public:
 
     int sendChunk()
     {
+
         std::istringstream strm(request);
         string str;
         strm >> str;
@@ -67,29 +77,33 @@ public:
                 cout << "send header errno = " << errno << endl;
                 cerr << "/////////Send header Error" << endl;
             }
-
             header_sent += sent_size;
-            // cout << "send HEADER to "<< socket << " with size = (" << sent_size << ")" << endl;//test
-            
             return 0;
         }
         file.read(buffer, BUFFER_SIZE);
         std::streamsize readedData = file.gcount();
-        if(readedData > 0)
+        if(readedData > 0 )
         {
             int sentData = send(socket, buffer, readedData, 0);
             if(sentData == -1)
             {
+                if(errno == EPIPE)
+                {
+                    file.seekg(-BUFFER_SIZE, std::ios_base::cur);
+                    cout << "mehdi" << endl;
+                    file.close();
+                    return 1;
+                }
                 return 1;
             }
+            filePos += sentData;
 			if(sentData < readedData)
                 file.seekg(sentData - readedData, std::ios_base::cur);
-            // cout << "send Chunk to "<< socket << " with size = (" << sentData << ")" << endl;//test
             return 0;
         }
         else
         {
-            return 1;   
+            return 2;
         }
         
 

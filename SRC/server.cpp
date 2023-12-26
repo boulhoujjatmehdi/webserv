@@ -43,7 +43,10 @@ int main()
 {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	string full_request;
+	struct timeval timout;
 
+	timout.tv_sec = 5;
+	timout.tv_usec = 0;
 	if(sockfd == -1)
 	{
 		cerr << "Failed to Create Socket"<< endl;
@@ -90,18 +93,14 @@ int main()
 	fd_set theFdSetWrite[NBOFCLIENTS];
 	FD_ZERO(theFdSetRead);
 	fdMapRead[sockfd] = httpRequest();
-	int count_send = 0;
 
 	while (1)
 	{
 		debute:
 		refresh_fd_set(theFdSetRead, theFdSetWrite);
-		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, NULL);
-		// cout << "***********************************"<< endl;//test
-		// cout << "select triggered"<< endl;	
+		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
 		if(FD_ISSET(sockfd, theFdSetRead))
 		{
-			// cout << "new connection to setup"<< endl;
 			int datasocket = accept(sockfd, NULL, NULL);
 			if(datasocket == -1)
 			{
@@ -114,11 +113,6 @@ int main()
 				cerr << "set Socket Options error"<<endl;
 				exit(1);
 			}
-			// else
-			// {
-			// 	// cout << "socket " << datasocket << " is on nosigpipe" << endl;//test
-			// }
-			// Set the socket to non-blocking mode
 			int flags = fcntl(datasocket, F_GETFL, 0);
 			if (flags == -1) {
 				cerr << "Can't get flags for socket" << endl;
@@ -130,8 +124,6 @@ int main()
 				return -1;
 			}
 			fdMapRead[datasocket] = httpRequest(datasocket, "");
-			refresh_fd_set(theFdSetRead, theFdSetWrite);
-			
 		}
 		else
 		{
@@ -143,7 +135,7 @@ int main()
 			{
 				if(FD_ISSET(it->first, theFdSetRead))
 				{
-					
+					 
 					commSocket = it->first;
 					bzero(buffer, 200);
 					int size_readed = recv(commSocket, buffer, 200, 0);
@@ -158,7 +150,7 @@ int main()
 						full_request.clear();
 						close(commSocket);
 						fdMapRead.erase(commSocket);
-						//TODO: TRY CONTINUE
+						goto debute;
 					}
 					else 
 					{
@@ -169,7 +161,6 @@ int main()
 							cout << "full request received!!!"<<endl;
 							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "./oxer-html/index.html")));
 							fdMapRead.erase(commSocket);
-							refresh_fd_set(theFdSetRead, theFdSetWrite); //TODO: OPTIMIZE 
 							goto debute;
 						}
 					}
@@ -181,17 +172,22 @@ int main()
 				{
 					commSocket = it->first;			
 							full_request.clear();
-							if (it->second.sendChunk())
+							int returnNumber;
+							returnNumber = it->second.sendChunk();
+							if (returnNumber == 1)
 							{
 								close(commSocket);
-								count_send = 0;//delete
-								
-								// cout << "closed" << commSocket<<endl;//test
 								fdMapWrite.erase(commSocket);
-								break;
-
+								goto debute;
 							}
-
+							else if(returnNumber == 2)
+							{
+								fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, "")));
+								fdMapWrite.erase(commSocket);
+								goto debute;
+							}
+							else 
+								goto debute;
 				}
 			}
 		}
