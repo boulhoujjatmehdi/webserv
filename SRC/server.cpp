@@ -159,7 +159,8 @@ int main()
 						if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
 						{
 							cout << "full request received!!!"<<endl;
-							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "./oxer-html/index.html")));
+							it->second.generate_response();
+							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
 							fdMapRead.erase(commSocket);
 							goto debute;
 						}

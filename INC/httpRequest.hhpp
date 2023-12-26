@@ -16,14 +16,6 @@ class httpRequest
 public:
     int socket;
     string request;
-	
-	string method;
-	string uri;
-	string http_version;
-	string hostname;
-	string port;
-	bool connection;
-	int status;
 
     const int& getSocket() const
     {
@@ -33,22 +25,16 @@ public:
 
     httpRequest(const httpRequest& obj)
     {
-        *this = obj;
-
+        socket = obj.socket;
+        request = obj.request;
     }
     httpRequest& operator=(const httpRequest& obj)
     {
         socket = obj.socket;
         request = obj.request;
-		method = obj.method;
-		uri = obj.uri;
-		http_version = obj.http_version;
-		hostname = obj.hostname;
-		port = obj.port;
-		connection = obj.connection;
         return *this;
     }
-    httpRequest(int socket = -1, string request = ""): socket(socket), request(request), connection(false)
+    httpRequest(int socket = -1, string request = ""): socket(socket), request(request)
     {
 
     }
@@ -58,6 +44,5 @@ public:
 
     }
     
-	void	generate_response();
 
 };
