@@ -3,18 +3,32 @@
 #include <iostream>
 
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <netinet/in.h>
-#include <cstring>
-#include <poll.h>
+#include <sys/select.h>
+#include <fcntl.h>
+#include <fstream>
+#include <sstream>
 
+#define PORT1 8080
 
-#include "../parcing/parceConfFile.hpp"
+#define NBOFCLIENTS 3334
 
-#define PORT 8080
 
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
+
+#include <vector>
+#include <map>
+
+#include "httpResponse.hpp"
+
+// std::vector<int> fd_vec;
+std::map<int, httpRequest> fdMapRead;
+std::map<int, httpResponse> fdMapWrite;
+
+int getMaxFd();
+void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite);
