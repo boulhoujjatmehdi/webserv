@@ -5,11 +5,15 @@
 #include <sys/socket.h>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
+
+#define BUFFER_SIZE 4096
+
 
 class httpRequest
 {
@@ -30,33 +34,16 @@ public:
         return socket;
     }
 
-
     httpRequest(const httpRequest& obj)
     {
         *this = obj;
+    }
 
-    }
-    httpRequest& operator=(const httpRequest& obj)
-    {
-        socket = obj.socket;
-        request = obj.request;
-		method = obj.method;
-		uri = obj.uri;
-		http_version = obj.http_version;
-		hostname = obj.hostname;
-		port = obj.port;
-		connection = obj.connection;
-        return *this;
-    }
-    httpRequest(int socket = -1, string request = ""): socket(socket), request(request), connection(false)
-    {
+    httpRequest& operator=(const httpRequest& obj);
 
-    }
+    httpRequest(int socket = -1): socket(socket), request(""), connection(false){}
     
-    ~httpRequest()
-    {
-
-    }
+    ~httpRequest(){}
     
 	void	generate_response();
 

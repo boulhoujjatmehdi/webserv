@@ -1,59 +1,104 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   response.cpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/26 12:18:49 by aachfenn         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+#include "../INC/server.hpp"
 
-#include "../INC/httpRequest.hpp"
+    httpResponse::httpResponse(const httpResponse& obj)
+    {
+        socket = obj.socket;
+        header_sent = obj.header_sent;
+        header = obj.header;
+        request = obj.request;
+        filename = obj.filename;
+		cout << "filename : ("<< filename<< ")"<< endl;
+		open_file:
+        file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
-void	httpRequest::generate_response() {
-	// cout << request << endl;
+		if(file.is_open())
+		{
+			cout << "assoudenk is open"<< endl;
+		}
+		else {
+			cout << "second "<< endl;
+			status = 404;
+			filename = "./oxer-html/404.html";
+			goto open_file;
+		}
 
-	string first_line = request.substr(0, request.find("\n"));
-	{
-		int pos_1 = request.find(" ");
-		int pos_2 = request.find(" ", pos_1 + 1);
-		method = request.substr(0, pos_1);
-		uri = request.substr(pos_1 + 1, pos_2 - pos_1 - 1);
-		http_version = request.substr(pos_2 + 1, request.find("\n") - pos_2 - 2);
-	}
-	{
-		size_t pos_1 = request.find("Host");
-		if (pos_1 == string::npos)
-			exit (1);
-		pos_1 += 6;
-		size_t pos_2 = request.find(":", pos_1);
-		if (pos_2 == string::npos)
-			exit (1);
-		hostname = request.substr(pos_1, pos_2 - pos_1);
-		port = request.substr(pos_2 + 1, request.find("\r", pos_2) - pos_2 - 1);
-	}
-	{
-		size_t pos_1 = request.find("Connection");
-		if (pos_1 == string::npos)
-			exit (1);
-		pos_1 += 12;
-		size_t pos_2 = request.find("\r", pos_1);
-		if (pos_2 == string::npos)
-			exit (1);
+        filePos = 0;
+        fileSize = file.tellg();
+        file.seekg(0);
 
-		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
-			connection = true;
-	}
-	
-	// cout << first_line << endl;
-	
-	cout << "method is >> |" << method  << "|" << endl;
-	cout << "uri is >> |" << uri  << "|" << endl;
-	cout << "http_version is >> |" << http_version  << "|" << endl;
-	cout << "hostname is >> |" << hostname  << "|" << endl;
-	cout << "port is >> |" << port  << "|" << endl;
-	cout << "connection is >> |" << connection  << "|" << endl;
-	cout << "***********************************\n";
+        
+    }
+
+    httpResponse::~httpResponse()
+    {
+        if(file.is_open())
+            file.close();
+    }
+
+    int httpResponse::sendChunk()
+    {
+        std::istringstream strm(request);
+        string str;
+        strm >> str;
+        int sent_size, sentData;
+
+        if(header_sent < header.size())
+        {
+            sent_size = send(socket, header.c_str() + header_sent, header.size() - header_sent , 0);
+            if(sent_size == -1)
+                return 1;
+            header_sent += sent_size;
+            return 0;
+        }
+        file.read(buffer, BUFFER_SIZE);
+        std::streamsize readedData = file.gcount();
+        if(readedData > 0)
+        {
+            sentData = send(socket, buffer, readedData, 0);
+            if(sentData == -1)
+            {
+                return 1;
+            }
+			if(sentData < readedData)
+                file.seekg(sentData - readedData, std::ios_base::cur);
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+bool endwith(const std::string& str, const std::string& suffix)
+{
+    if (str.length() >= suffix.length()) {
+        return (0 == str.compare(str.length() - suffix.length(), suffix.length(), suffix));
+    } else {
+        return false;
+    }
+}
+
+httpResponse::httpResponse(const httpRequest& obj,string Filename): httpRequest(obj),filename(Filename), header_sent(0)
+{
+    if (uri == "/")
+        uri = "/index.html";
+    filename = "./oxer-html" + uri;
+    if (endwith(filename, ".html"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+    else if (endwith(filename, ".css"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/css; charset=UTF-8\r\n\r\n";
+    else if (endwith(filename, ".png"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: image/png; charset=UTF-8\r\n\r\n";
+    else if (endwith(filename, ".jpeg"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: image/jpeg; charset=UTF-8\r\n\r\n";
+    else if (endwith(filename, ".jpg"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: image/jpg; charset=UTF-8\r\n\r\n";
+    else if (endwith(filename, ".js"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\n\r\n";
+    else if (endwith(filename, ".js"))
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\n\r\n";
+    else
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+
+
 }

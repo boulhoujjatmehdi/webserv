@@ -6,4 +6,5 @@ test.c
 .vscode
 progname
 largephoto.jpeg
-.zip
+*.zip
+*.o

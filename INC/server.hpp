@@ -26,11 +26,11 @@ using std::string;
 
 #include "httpResponse.hpp"
 
-// std::vector<int> fd_vec;
-std::map<int, httpRequest> fdMapRead;
-std::map<int, httpResponse> fdMapWrite;
+
+
 
 int getMaxFd();
 void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite);
+
 
 

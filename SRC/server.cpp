@@ -1,5 +1,11 @@
 #include "../INC/server.hpp"
 
+std::map<int, httpRequest> fdMapRead;
+std::map<int, httpResponse> fdMapWrite;
+fd_set theFdSetRead[NBOFCLIENTS];
+fd_set theFdSetWrite[NBOFCLIENTS];
+
+int  readTheRequest(std::map<int, httpRequest>::iterator& it);
 int getMaxFd()
 {
 	int tmp = -1;
@@ -39,14 +45,9 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
 }
 
 
-int main()
+int connectSockets()
 {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	string full_request;
-	struct timeval timout;
-
-	timout.tv_sec = 5;
-	timout.tv_usec = 0;
 	if(sockfd == -1)
 	{
 		cerr << "Failed to Create Socket"<< endl;
@@ -68,32 +69,88 @@ int main()
 	int flags = fcntl(sockfd, F_GETFL, 0);
 	if (flags == -1) {
 		cerr << "Can't get flags for socket" << endl;
-		return -1;
+		exit(1);
 	}
 
 	flags |= O_NONBLOCK;
 	if (fcntl(sockfd, F_SETFL, flags) == -1) {
 		cerr << "Can't set socket to non-blocking mode" << endl;
-		return -1;
+		exit(1);
 	}
 
 	if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
 	{
 		cerr << "Failed to Bind"<< endl;
-		return 1;
+		exit(1);
 	}
 
 	if(listen(sockfd, 10) == -1)
 	{
 		cerr << "Failed to listen"<< endl;
-		return 1;        
+		exit(1);
 	}
 
-	fd_set theFdSetRead[NBOFCLIENTS];
-	fd_set theFdSetWrite[NBOFCLIENTS];
 	FD_ZERO(theFdSetRead);
 	fdMapRead[sockfd] = httpRequest();
+	return sockfd;
+}
 
+void acceptNewConnections(int sockfd)
+{
+	int datasocket = accept(sockfd, NULL, NULL);
+		if(datasocket == -1)
+		{
+			cerr << "accept error" << endl;
+			exit(1);
+		}
+		int optval =1 ;
+		if(setsockopt(datasocket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1)
+		{
+			cerr << "set Socket Options error"<<endl;
+			exit(1);
+		}
+		int flags = fcntl(datasocket, F_GETFL, 0);
+		if (flags == -1) {
+			cerr << "Can't get flags for socket" << endl;
+			exit(1);
+		}
+		flags |= O_NONBLOCK;
+		if (fcntl(datasocket, F_SETFL, flags) == -1) {
+			cerr << "Can't set socket to non-blocking mode" << endl;
+			exit(1);
+		}
+		fdMapRead[datasocket] = httpRequest(datasocket);
+}
+
+
+int writeOnSocket(std::map<int, httpResponse>::iterator& it)
+{
+	int commSocket, returnNumber;
+
+	commSocket = it->first;			
+	returnNumber = it->second.sendChunk();
+	if (returnNumber == 1)
+	{
+		close(commSocket);
+		fdMapWrite.erase(commSocket);
+		return 0;
+	}
+	else if(returnNumber == 2)
+	{
+		fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket)));
+		fdMapWrite.erase(commSocket);
+		return 0;
+	}
+	else 
+		return 0;
+}
+
+int main()
+{
+	struct timeval timout;
+	timout.tv_sec = 5;
+	timout.tv_usec = 0;
+	int sockfd = connectSockets();
 	while (1)
 	{
 		debute:
@@ -101,94 +158,24 @@ int main()
 		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
 		if(FD_ISSET(sockfd, theFdSetRead))
 		{
-			int datasocket = accept(sockfd, NULL, NULL);
-			if(datasocket == -1)
-			{
-				cerr << "accept error" << endl;
-				exit(1);
-			}
-			int optval =1 ;
-			if(setsockopt(datasocket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1)
-			{
-				cerr << "set Socket Options error"<<endl;
-				exit(1);
-			}
-			int flags = fcntl(datasocket, F_GETFL, 0);
-			if (flags == -1) {
-				cerr << "Can't get flags for socket" << endl;
-				return -1;
-			}
-			flags |= O_NONBLOCK;
-			if (fcntl(datasocket, F_SETFL, flags) == -1) {
-				cerr << "Can't set socket to non-blocking mode" << endl;
-				return -1;
-			}
-			fdMapRead[datasocket] = httpRequest(datasocket, "");
+			acceptNewConnections(sockfd);
 		}
 		else
 		{
-			int commSocket;
-
-			char buffer[200];
-
 			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 			{
 				if(FD_ISSET(it->first, theFdSetRead))
 				{
-					 
-					commSocket = it->first;
-					bzero(buffer, 200);
-					int size_readed = recv(commSocket, buffer, 200, 0);
-					if(size_readed == -1)
-					{
-						cerr << "error at reading from socket"<< endl;
-						exit(1);
-					}
-					else if(size_readed == 0)
-					{
-						cout << "connection ended"<< endl;
-						full_request.clear();
-						close(commSocket);
-						fdMapRead.erase(commSocket);
+					if(readTheRequest(it) == 0)
 						goto debute;
-					}
-					else 
-					{
-						// cout << "-------------------" << endl;
-						it->second.request = it->second.request + string(buffer);
-						if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
-						{
-							cout << "full request received!!!"<<endl;
-							it->second.generate_response();
-							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
-							fdMapRead.erase(commSocket);
-							goto debute;
-						}
-					}
 				}
 			}
 			for (std::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
 			{
 				if(FD_ISSET(it->first, theFdSetWrite))
 				{
-					commSocket = it->first;			
-							full_request.clear();
-							int returnNumber;
-							returnNumber = it->second.sendChunk();
-							if (returnNumber == 1)
-							{
-								close(commSocket);
-								fdMapWrite.erase(commSocket);
-								goto debute;
-							}
-							else if(returnNumber == 2)
-							{
-								fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, "")));
-								fdMapWrite.erase(commSocket);
-								goto debute;
-							}
-							else 
-								goto debute;
+					if(writeOnSocket(it) == 0)
+						goto debute;
 				}
 			}
 		}
