@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/27 10:27:28 by eboulhou         ###   ########.fr       */
+/*   Updated: 2023/12/27 15:53:37 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ extern fd_set theFdSetWrite[NBOFCLIENTS];
 httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
 	socket = obj.socket;
+	server_socket = obj.server_socket;
 	request = obj.request;
 	method = obj.method;
 	uri = obj.uri;
@@ -68,13 +69,13 @@ void	httpRequest::generate_response() {
 	
 	// cout << first_line << endl;
 	
-	// cout << "method is >> |" << method  << "|" << endl;
-	// cout << "uri is >> |" << uri  << "|" << endl;
-	// cout << "http_version is >> |" << http_version  << "|" << endl;
-	// cout << "hostname is >> |" << hostname  << "|" << endl;
-	// cout << "port is >> |" << port  << "|" << endl;
-	// cout << "connection is >> |" << connection  << "|" << endl;
-	// cout << "***********************************\n";
+	cout << "method is >> |" << method  << "|" << endl;
+	cout << "uri is >> |" << uri  << "|" << endl;
+	cout << "http_version is >> |" << http_version  << "|" << endl;
+	cout << "hostname is >> |" << hostname  << "|" << endl;
+	cout << "port is >> |" << port  << "|" << endl;
+	cout << "connection is >> |" << connection  << "|" << endl;
+	cout << "***********************************\n";
 }
 
 

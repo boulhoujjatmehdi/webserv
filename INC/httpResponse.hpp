@@ -30,7 +30,7 @@ public:
 
     httpResponse(const httpRequest& obj,string Filename);
 
-    httpResponse()
+    httpResponse():httpRequest(-1, -1)
     {
         filename = "";
     }

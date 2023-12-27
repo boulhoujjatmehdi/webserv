@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include "../parcing/parceConfFile.hpp"
 
 using std::cout;
 using std::cerr;
@@ -19,8 +20,8 @@ class httpRequest
 {
 public:
     int socket;
+    int server_socket;
     string request;
-	
 	string method;
 	string uri;
 	string http_version;
@@ -41,7 +42,18 @@ public:
 
     httpRequest& operator=(const httpRequest& obj);
 
-    httpRequest(int socket = -1): socket(socket), request(""), connection(false){}
+
+    httpRequest(int socket ): socket(socket), server_socket(-1), request(""), connection(false)
+    {
+    }
+    httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false)
+    {
+    }
+    // httpRequest(): request(""), connection(false)
+    // {
+
+    //     cout << "server_socket3 : "<< server_socket << endl;
+    // }
     
     ~httpRequest(){}
     

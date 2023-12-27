@@ -1,24 +1,22 @@
 #include "../INC/server.hpp"
+extern std::map<int, Server> servers_sockets;
 
-    httpResponse::httpResponse(const httpResponse& obj)
+    httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
     {
         socket = obj.socket;
         header_sent = obj.header_sent;
         header = obj.header;
         request = obj.request;
         filename = obj.filename;
+
 		cout << "filename : ("<< filename<< ")"<< endl;
 		open_file:
         file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
-		if(file.is_open())
-		{
-			cout << "assoudenk is open"<< endl;
-		}
-		else {
-			cout << "second "<< endl;
+		if(!file.is_open())
+        {
 			status = 404;
-			filename = "./oxer-html/404.html";
+			filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
 			goto open_file;
 		}
 
@@ -81,8 +79,8 @@ bool endwith(const std::string& str, const std::string& suffix)
 httpResponse::httpResponse(const httpRequest& obj,string Filename): httpRequest(obj),filename(Filename), header_sent(0)
 {
     if (uri == "/")
-        uri = "/index.html";
-    filename = "./oxer-html" + uri;
+        uri = servers_sockets[server_socket].location[0].default_file;
+    filename = servers_sockets[server_socket].location[0].path + "/" + uri;
     if (endwith(filename, ".html"))
         header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
     else if (endwith(filename, ".css"))
@@ -99,6 +97,5 @@ httpResponse::httpResponse(const httpRequest& obj,string Filename): httpRequest(
         header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\n\r\n";
     else
         header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-
 
 }

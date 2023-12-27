@@ -2,6 +2,7 @@
 
 std::map<int, httpRequest> fdMapRead;
 std::map<int, httpResponse> fdMapWrite;
+std::map<int, Server> servers_sockets;
 fd_set theFdSetRead[NBOFCLIENTS];
 fd_set theFdSetWrite[NBOFCLIENTS];
 
@@ -45,54 +46,64 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
 }
 
 
-int connectSockets()
+int connectSockets(parceConfFile cf)
 {
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if(sockfd == -1)
+	int port;
+	for (int i = 0; i < cf.server_nb ; i ++)
 	{
-		cerr << "Failed to Create Socket"<< endl;
-		return 1;
-	}
-	struct sockaddr_in address;
-	// socklen_t socket_lenght  = sizeof(address);
-	bzero(&address, sizeof(struct sockaddr_in));
-	address.sin_family = AF_INET;
-	address.sin_port = htons(PORT1);
-	address.sin_addr.s_addr = INADDR_ANY;
-	int optval = 1;
-	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-		cerr << "Error setting socket options" << endl;
-		exit(1);
-	}
+		port = std::atoi(cf.server[i].listen[0].c_str());
+		int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		if(sockfd == -1)
+		{
+			cerr << "Failed to Create Socket"<< endl;
+			return 1;
+		}
+		struct sockaddr_in address;
+		// socklen_t socket_lenght  = sizeof(address);
+		bzero(&address, sizeof(struct sockaddr_in));
+		address.sin_family = AF_INET;
+		address.sin_port = htons(port);
+		address.sin_addr.s_addr = INADDR_ANY;
+		int optval = 1;
+		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+			cerr << "Error setting socket options" << endl;
+			exit(1);
+		}
 
-	// Set the socket to non-blocking mode
-	int flags = fcntl(sockfd, F_GETFL, 0);
-	if (flags == -1) {
-		cerr << "Can't get flags for socket" << endl;
-		exit(1);
-	}
+		// Set the socket to non-blocking mode
+		int flags = fcntl(sockfd, F_GETFL, 0);
+		if (flags == -1) {
+			cerr << "Can't get flags for socket" << endl;
+			exit(1);
+		}
 
-	flags |= O_NONBLOCK;
-	if (fcntl(sockfd, F_SETFL, flags) == -1) {
-		cerr << "Can't set socket to non-blocking mode" << endl;
-		exit(1);
-	}
+		flags |= O_NONBLOCK;
+		if (fcntl(sockfd, F_SETFL, flags) == -1) {
+			cerr << "Can't set socket to non-blocking mode" << endl;
+			exit(1);
+		}
 
-	if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
-	{
-		cerr << "Failed to Bind"<< endl;
-		exit(1);
-	}
+		if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
+		{
+			cerr << "Failed to Bind"<< endl;
+			exit(1);
+		}
 
-	if(listen(sockfd, 10) == -1)
-	{
-		cerr << "Failed to listen"<< endl;
-		exit(1);
-	}
+		if(listen(sockfd, 10) == -1)
+		{
+			cerr << "Failed to listen"<< endl;
+			exit(1);
+		}
 
-	FD_ZERO(theFdSetRead);
-	fdMapRead[sockfd] = httpRequest();
-	return sockfd;
+		FD_ZERO(theFdSetRead);
+		servers_sockets[sockfd] = cf.server[i];
+
+		// cout <<"test this shit : " <<  servers_sockets[sockfd]->error_pages[0]<< endl;
+		// cout <<"test this shit : " << servers_sockets[sockfd]->location[0].path << endl;
+
+		fdMapRead.insert(std::make_pair(sockfd, httpRequest(-1, -1)));
+	}
+	return 1;
 }
 
 void acceptNewConnections(int sockfd)
@@ -119,7 +130,9 @@ void acceptNewConnections(int sockfd)
 			cerr << "Can't set socket to non-blocking mode" << endl;
 			exit(1);
 		}
-		fdMapRead[datasocket] = httpRequest(datasocket);
+		fdMapRead.insert(std::make_pair(datasocket, httpRequest(datasocket, sockfd)));
+
+		
 }
 
 
@@ -147,20 +160,29 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 
 int main()
 {
+	parceConfFile cf;
+	parce_conf_file(cf);
+
 	struct timeval timout;
 	timout.tv_sec = 5;
 	timout.tv_usec = 0;
-	int sockfd = connectSockets();
+	connectSockets(cf);
+
 	while (1)
 	{
 		debute:
 		refresh_fd_set(theFdSetRead, theFdSetWrite);
 		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
-		if(FD_ISSET(sockfd, theFdSetRead))
+		
+		for(std::map<int, Server>::iterator it = servers_sockets.begin(); it != servers_sockets.end(); it++)
 		{
-			acceptNewConnections(sockfd);
+			if(FD_ISSET(it->first, theFdSetRead))
+			{
+				acceptNewConnections(it->first);
+				goto debute;
+			}
 		}
-		else
+		if(1)
 		{
 			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 			{

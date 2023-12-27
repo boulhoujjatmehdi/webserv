@@ -1,6 +1,6 @@
 NAME = progName
 
-SRC = $(wildcard ./SRC/*.cpp)
+SRC = $(wildcard ./SRC/*.cpp) $(wildcard ./parcing/*.cpp)
 HED = $(wildcard ./INC/*.hpp)
 
 
