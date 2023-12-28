@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/20 09:10:43 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/26 09:25:21 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/26 15:15:57 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@
 // 		serverAddress.sin_port = htons(ports[i]);
 
 // 		int optval = 1;
-// 		if (setsockopt(listenSocket[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-// 		    std::cerr << "setsockopt failed";
-// 		    return 1;
-// 		}
+		// if (setsockopt(listenSocket[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
+		//     std::cerr << "setsockopt failed";
+		//     return 1;
+		// }
 		
 // 		if (bind(listenSocket[i], (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
 // 			cout << "Bind failed";

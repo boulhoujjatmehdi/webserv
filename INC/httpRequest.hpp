@@ -18,12 +18,14 @@ public:
     string request;
 	
 	string method;
+	// Uniform Resource Identifier
 	string uri;
 	string http_version;
 	string hostname;
 	string port;
 	bool connection;
 	int status;
+	int body_size;
 
     const int& getSocket() const
     {
@@ -34,7 +36,6 @@ public:
     httpRequest(const httpRequest& obj)
     {
         *this = obj;
-
     }
     httpRequest& operator=(const httpRequest& obj)
     {
@@ -48,7 +49,7 @@ public:
 		connection = obj.connection;
         return *this;
     }
-    httpRequest(int socket = -1, string request = ""): socket(socket), request(request), connection(false)
+    httpRequest(int socket = -1, string request = ""): socket(socket), request(request), connection(false), body_size(0)
     {
 
     }
@@ -57,7 +58,9 @@ public:
     {
 
     }
-    
+
 	void	generate_response();
+	void	parce_request();
+	void	calculate_body_size();
 
 };

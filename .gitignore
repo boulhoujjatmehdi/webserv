@@ -1,3 +1,7 @@
 *.o
 .vscode
 exxx
+oxer-html
+.vscode
+request
+default.conf

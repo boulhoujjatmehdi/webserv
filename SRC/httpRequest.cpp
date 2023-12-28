@@ -1,20 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   response.cpp                                       :+:      :+:    :+:   */
+/*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/26 12:18:49 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/27 14:40:08 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/httpRequest.hpp"
 
-void	httpRequest::generate_response() {
-	// cout << request << endl;
+void	httpRequest::calculate_body_size() {
+	
+	size_t start = request.find("\r\n\r\n");
+	start += 4;
+	body_size = request.size() - start;
+	// i should check the body size with the config file one
+		// throw (std::runtime_error("error 10"));
+	cout << "body size is : " << body_size << endl;
+}
 
+void	httpRequest::parce_request() {
+	
 	string first_line = request.substr(0, request.find("\n"));
 	{
 		int pos_1 = request.find(" ");
@@ -45,6 +54,22 @@ void	httpRequest::generate_response() {
 
 		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
 			connection = true;
+	}
+	// calculate_body_size();
+}
+
+void	httpRequest::generate_response() {
+	// cout << request << endl;
+
+	try {
+
+		parce_request();
+	}
+	catch (std::exception &e) {
+		cout << e.what() << endl;
+	}
+	catch (...) {
+		cout << "Errorrrrrrrrrrrrrrrr" << endl;
 	}
 	
 	// cout << first_line << endl;

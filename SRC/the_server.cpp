@@ -166,9 +166,9 @@ int main()
 						it->second.request = it->second.request + string(buffer);
 						if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
 						{
-							cout << "full request received!!!"<<endl;
+							// cout << "full request received!!!"<<endl;
 							it->second.generate_response();
-							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
+							fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
 							fdMapRead.erase(commSocket);
 							refresh_fd_set(theFdSetRead, theFdSetWrite); //TODO: OPTIMIZE
 							goto debute;
