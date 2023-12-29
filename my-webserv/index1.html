@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="deleteResource()">Delete Resource</button>
+
+<script>
+function deleteResource() {
+  fetch('/resource-path', {
+    method: 'DELETE',
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch((error) => console.error('Error:', error));
+}
+</script>
+
+</body>
+</html>

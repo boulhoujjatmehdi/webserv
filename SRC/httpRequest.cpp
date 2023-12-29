@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/28 18:49:37 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/29 13:38:13 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ extern fd_set theFdSetWrite[NBOFCLIENTS];
 httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
 	socket = obj.socket;
+	content_length = obj.content_length;
 	server_socket = obj.server_socket;
 	request = obj.request;
 	method = obj.method;

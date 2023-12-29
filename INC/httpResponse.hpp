@@ -1,13 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   httpResponse.hpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
+/*   Updated: 2023/12/29 11:41:15 by aachfenn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include "httpRequest.hpp"
 #include <sys/socket.h>
 #include <sys/types.h>
-
-
-
-
-
 
 class httpResponse: public httpRequest
 {
@@ -28,7 +35,7 @@ public:
     //copy constructor
     httpResponse(const httpResponse& obj);
 
-    httpResponse(const httpRequest& obj);
+    httpResponse(const httpRequest& obj,string Filename);
 
     httpResponse():httpRequest(-1, -1)
     {
