@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 09:44:53 by eboulhou         ###   ########.fr       */
+/*   Updated: 2023/12/29 16:36:12 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ public:
     }
     //copy constructor
     httpResponse(const httpResponse& obj);
-
-    httpResponse(const httpRequest& obj,string Filename);
+    //constructor with request as param
+    httpResponse(const httpRequest& obj);
 
     httpResponse():httpRequest(-1, -1)
     {
@@ -49,4 +49,6 @@ public:
     ~httpResponse();
 
     int sendChunk();
+    void setData();
+    // void openFile();
 };

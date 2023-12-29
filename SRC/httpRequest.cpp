@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/28 18:49:37 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/29 17:56:26 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,14 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 
 void	httpRequest::checks_() {
 
+	
 	size_t start = request.find("\r\n\r\n");
 	start += 4;
 	body_size = request.size() - start;
-	cout << "body size is : " << body_size << " cf bs is : " << servers_sockets[this->server_socket].client_body_size << endl;
-	cout << "URI L ::: " << uri.length() << endl;
+	// cout << "bsz : " << body_size << endl;
+	// cout << "server bs : "<< servers_sockets[this->server_socket].client_body_size << endl;
+	// cout << "body size is : " << body_size << " cf bs is : " << servers_sockets[this->server_socket].client_body_size << endl;
+	// cout << "URI L ::: " << uri.length() << endl;
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw (std::runtime_error("error 9"));
 		
@@ -94,7 +97,7 @@ void	httpRequest::parce_request() {
 }
 
 void	httpRequest::generate_response() {
-	cout << request << endl;
+
 
 	try {
 		parce_request();
@@ -108,11 +111,11 @@ void	httpRequest::generate_response() {
 		exit (1);
 	}
 	// cout << first_line << endl;
-	cout << "method is >> |" << method  << "|" << endl;
-	cout << "uri is >> |" << uri  << "|" << endl;
-	cout << "http_version is >> |" << http_version  << "|" << endl;
-	cout << "hostname is >> |" << hostname  << "|" << endl;
-	cout << "port is >> |" << port  << "|" << endl;
-	cout << "connection is >> |" << connection  << "|" << endl;
-	cout << "***********************************\n";
+	// cout << "method is >> |" << method  << "|" << endl;
+	// cout << "uri is >> |" << uri  << "|" << endl;
+	// cout << "http_version is >> |" << http_version  << "|" << endl;
+	// cout << "hostname is >> |" << hostname  << "|" << endl;
+	// cout << "port is >> |" << port  << "|" << endl;
+	// cout << "connection is >> |" << connection  << "|" << endl;
+	// cout << "***********************************\n";
 }
