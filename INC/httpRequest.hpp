@@ -29,6 +29,7 @@ public:
 	string port;
 	bool connection;
 	int status;
+    int postLength;
 
     const int& getSocket() const
     {
@@ -49,12 +50,7 @@ public:
     httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false)
     {
     }
-    // httpRequest(): request(""), connection(false)
-    // {
 
-    //     cout << "server_socket3 : "<< server_socket << endl;
-    // }
-    
     ~httpRequest(){}
     
 	void	generate_response();

@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/27 15:53:37 by eboulhou         ###   ########.fr       */
+/*   Updated: 2023/12/28 13:24:47 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 }
 
 void	httpRequest::generate_response() {
-	// cout << request << endl;
-
+	cout << "mehdi " <<  request << endl;
 	string first_line = request.substr(0, request.find("\n"));
 	{
 		int pos_1 = request.find(" ");
@@ -79,41 +78,3 @@ void	httpRequest::generate_response() {
 }
 
 
-
-int  readTheRequest(std::map<int, httpRequest>::iterator& it)
-{
-	int commSocket;
-	char buffer[BUFFER_SIZE];
-	int size_readed;
-
-	commSocket = it->first;
-	bzero(buffer, BUFFER_SIZE);
-	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
-	if(size_readed == -1)
-	{
-		cerr << "error at reading from socket"<< endl;
-		exit(1);
-	}
-	else if(size_readed == 0)
-	{
-		cout << "connection ended"<< endl;
-		close(commSocket);
-		fdMapRead.erase(commSocket);
-		return 0;
-	}
-	else 
-	{
-		// cout << "-------------------" << endl;
-		it->second.request = it->second.request + string(buffer);
-		if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
-		{
-			cout << "full request received!!!"<<endl;
-			it->second.generate_response();
-			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
-			fdMapRead.erase(commSocket);
-			return 0;
-		}
-	}
-	cout << "impossible to reach"<< endl;
-	return 0;
-}
