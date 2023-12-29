@@ -5,20 +5,24 @@
 #include <sys/socket.h>
 #include <fstream>
 #include <sstream>
+#include <map>
+#include "../parcing/parceConfFile.hpp"
 
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
 
+#define BUFFER_SIZE 4096
+
+
 class httpRequest
 {
 public:
     int socket;
+    int server_socket;
     string request;
-	
 	string method;
-	// Uniform Resource Identifier
 	string uri;
 	string http_version;
 	string hostname;
@@ -32,35 +36,30 @@ public:
         return socket;
     }
 
-
     httpRequest(const httpRequest& obj)
     {
         *this = obj;
     }
-    httpRequest& operator=(const httpRequest& obj)
-    {
-        socket = obj.socket;
-        request = obj.request;
-		method = obj.method;
-		uri = obj.uri;
-		http_version = obj.http_version;
-		hostname = obj.hostname;
-		port = obj.port;
-		connection = obj.connection;
-        return *this;
-    }
-    httpRequest(int socket = -1, string request = ""): socket(socket), request(request), connection(false), body_size(0)
-    {
 
+    httpRequest& operator=(const httpRequest& obj);
+
+
+    httpRequest(int socket ): socket(socket), server_socket(-1), request(""), connection(false)
+    {
     }
+    httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false)
+    {
+    }
+    // httpRequest(): request(""), connection(false)
+    // {
+
+    //     cout << "server_socket3 : "<< server_socket << endl;
+    // }
     
-    ~httpRequest()
-    {
-
-    }
-
+    ~httpRequest(){}
+    
 	void	generate_response();
 	void	parce_request();
-	void	calculate_body_size();
+	void	checks_();
 
 };

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/20 11:55:26 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/28 09:27:16 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,10 @@ class Server {
 		
 		Server();
 		~Server();
+		//copy construcot 
+		Server(const Server& obj);
+		//copy assignment operator
+		Server& operator=(const Server& obj);
 };
 
 class parceConfFile

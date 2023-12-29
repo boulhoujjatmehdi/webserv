@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/19 15:11:12 by aachfenn         ###   ########.fr       */
+/*   Updated: 2023/12/28 09:27:45 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,4 +243,28 @@ void parceConfFile::check_ifdata_is_valid() {
 		}
 	}
 	 
+}
+
+//copy constructor
+Server::Server(const Server& obj)
+{
+	listen = obj.listen;
+	server_name = obj.server_name;
+	error_pages = obj.error_pages;
+	client_body_size = obj.client_body_size;
+	root = obj.root;
+	location = obj.location;
+	location_nb = obj.location_nb;
+}
+//copy assignment operator
+Server& Server::operator=(const Server& obj)
+{
+	listen = obj.listen;
+	server_name = obj.server_name;
+	error_pages = obj.error_pages;
+	client_body_size = obj.client_body_size;
+	root = obj.root;
+	location = obj.location;
+	location_nb = obj.location_nb;
+	return *this;
 }

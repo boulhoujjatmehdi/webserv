@@ -1,128 +1,244 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/20 09:10:43 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/26 15:15:57 by aachfenn         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+#include "../INC/server.hpp"
 
-// #include "../INC/server.hpp"
-// #include <fcntl.h>
+std::map<int, httpRequest> fdMapRead;
+std::map<int, httpResponse> fdMapWrite;
+std::map<int, Server> servers_sockets;
+fd_set theFdSetRead[NBOFCLIENTS];
+fd_set theFdSetWrite[NBOFCLIENTS];
 
-// int main() {
-// 	parceConfFile cf;
-// 	parce_conf_file(cf);
+int  readTheRequest(std::map<int, httpRequest>::iterator& it);
+int getMaxFd()
+{
+	int tmp = -1;
+    if(fdMapRead.size() >= 1)
+	{
+		//PARSE: TRY TO USE RBEGIN() INSTEAD OF END
+		std::map<int, httpRequest>::iterator it = fdMapRead.end();
+		it--;
+		if( it->first > tmp)
+			tmp = it->first;
+	}
+	if(fdMapWrite.size() >= 1)
+	{
+		std::map<int, httpResponse>::iterator it = fdMapWrite.end();
+		it--;
+		if( it->first > tmp)
+			tmp = it->first;
+	}
 
-// 	int j = 0;
-// 	int listen_size = cf.server[j].listen.size();
-// 	int listenSocket[listen_size];
-// 	int ports[listen_size];
-// 	for (int i = 0;i < listen_size;i++) {
-// 		ports[i] = std::atoi((cf.server[j].listen[i]).c_str());
-// 	}
-// 	for (int i = 0;i < listen_size;i++) {
+    return tmp;
+}
+
+void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
+{
+    // FD_ZERO(fdRead);
+	bzero(fdRead, sizeof(fdRead) * NBOFCLIENTS);
+	bzero(fdWrite, sizeof(fdWrite) * NBOFCLIENTS);
+
+    for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
+    {
+        FD_SET(it->first, fdRead);
+    }
+    for (std::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
+    {
+        FD_SET(it->first, fdWrite);
+    }
+}
+
+
+int connectSockets(parceConfFile cf)
+{
+	int port;
+	for (int i = 0; i < cf.server_nb ; i ++)
+	{
+		port = std::atoi(cf.server[i].listen[0].c_str());
+		int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		if(sockfd == -1)
+		{
+			cerr << "Failed to Create Socket"<< endl;
+			return 1;
+		}
+		struct sockaddr_in address;
+		// socklen_t socket_lenght  = sizeof(address);
+		bzero(&address, sizeof(struct sockaddr_in));
+		address.sin_family = AF_INET;
+		address.sin_port = htons(port);
+		address.sin_addr.s_addr = INADDR_ANY;
+		int optval = 1;
+		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+			cerr << "Error setting socket options" << endl;
+			exit(1);
+		}
+
+		// Set the socket to non-blocking mode
+		int flags = fcntl(sockfd, F_GETFL, 0);
+		if (flags == -1) {
+			cerr << "Can't get flags for socket" << endl;
+			exit(1);
+		}
+
+		flags |= O_NONBLOCK;
+		if (fcntl(sockfd, F_SETFL, flags) == -1) {
+			cerr << "Can't set socket to non-blocking mode" << endl;
+			exit(1);
+		}
+
+		if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
+		{
+			cerr << "Failed to Bind"<< endl;
+			exit(1);
+		}
+
+		if(listen(sockfd, 10) == -1)
+		{
+			cerr << "Failed to listen"<< endl;
+			exit(1);
+		}
+
+		FD_ZERO(theFdSetRead);
+		servers_sockets[sockfd] = cf.server[i];
+
+		// cout <<"test this shit : " <<  servers_sockets[sockfd]->error_pages[0]<< endl;
+		// cout <<"test this shit : " << servers_sockets[sockfd]->location[0].path << endl;
+
+		fdMapRead.insert(std::make_pair(sockfd, httpRequest(-1, -1)));
+	}
+	return 1;
+}
+
+void acceptNewConnections(int sockfd)
+{
+	int datasocket = accept(sockfd, NULL, NULL);
+		if(datasocket == -1)
+		{
+			cerr << "accept error" << endl;
+			exit(1);
+		}
+		int optval =1 ;
+		if(setsockopt(datasocket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1)
+		{
+			cerr << "set Socket Options error"<<endl;
+			exit(1);
+		}
+		int flags = fcntl(datasocket, F_GETFL, 0);
+		if (flags == -1) {
+			cerr << "Can't get flags for socket" << endl;
+			exit(1);
+		}
+		flags |= O_NONBLOCK;
+		if (fcntl(datasocket, F_SETFL, flags) == -1) {
+			cerr << "Can't set socket to non-blocking mode" << endl;
+			exit(1);
+		}
+		fdMapRead.insert(std::make_pair(datasocket, httpRequest(datasocket, sockfd)));
+
 		
-// 		listenSocket[i] = socket(AF_INET, SOCK_STREAM, 0);
-// 		if (listenSocket[i] < 0) {
-// 			cout << "Could not create socket";
-// 			return 1;
-// 		}
-	
-// 		sockaddr_in serverAddress;
-// 		std::memset(&serverAddress, 0, sizeof(serverAddress));
-// 		serverAddress.sin_family = AF_INET;
-// 		serverAddress.sin_addr.s_addr = INADDR_ANY;
-// 		serverAddress.sin_port = htons(ports[i]);
+}
 
-// 		int optval = 1;
-		// if (setsockopt(listenSocket[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0) {
-		//     std::cerr << "setsockopt failed";
-		//     return 1;
-		// }
+
+int writeOnSocket(std::map<int, httpResponse>::iterator& it)
+{
+	int commSocket, returnNumber;
+
+	commSocket = it->first;			
+	returnNumber = it->second.sendChunk();
+	if (returnNumber == 1)
+	{
+		close(commSocket);
+		fdMapWrite.erase(commSocket);
+		return 0;
+	}
+	else if(returnNumber == 2)
+	{
+		fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket)));
+		fdMapWrite.erase(commSocket);
+		return 0;
+	}
+	else 
+		return 0;
+}
+
+int main()
+{
+	parceConfFile cf;
+	parce_conf_file(cf);
+
+	struct timeval timout;
+	timout.tv_sec = 5;
+	timout.tv_usec = 0;
+	connectSockets(cf);
+
+	while (1)
+	{
+		debute:
+		refresh_fd_set(theFdSetRead, theFdSetWrite);
+		select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
 		
-// 		if (bind(listenSocket[i], (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-// 			cout << "Bind failed";
-// 			return 1;
-// 		}
-	
-// 		if (listen(listenSocket[i], 3) < 0) {
-// 			cout << "Listen failed";
-// 			return 1;
-// 		}
-// 	}
+		for(std::map<int, Server>::iterator it = servers_sockets.begin(); it != servers_sockets.end(); it++)
+		{
+			if(FD_ISSET(it->first, theFdSetRead))
+			{
+				acceptNewConnections(it->first);
+				goto debute;
+			}
+		}
+		if(1)
+		{
+			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
+			{
+				if(FD_ISSET(it->first, theFdSetRead))
+				{
+					if(readTheRequest(it) == 0)
+						goto debute;
+				}
+			}
+			for (std::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
+			{
+				if(FD_ISSET(it->first, theFdSetWrite))
+				{
+					if(writeOnSocket(it) == 0)
+						goto debute;
+				}
+			}
+		}
+	}
 
-// 	// struct pollfd fds[listen_size];
-// 	std::vector<pollfd> fds;
-// 	for (int l = 0;l <listen_size;l++) {
+	return 0;
+}
 
-// 		pollfd pfd = { listenSocket[l], POLLIN, 0 };
-// 		fds.push_back(pfd);
-// 		// fds[l].fd = listenSocket[l];
-// 		// fds[l].events = POLLIN;
-// 	}
+int  readTheRequest(std::map<int, httpRequest>::iterator& it)
+{
+	int commSocket;
+	char buffer[BUFFER_SIZE];
+	int size_readed;
 
-// 	sockaddr_in clientAddress;
-// 	socklen_t clientAddressLength = sizeof(clientAddress);
-// 	int clientSocket;
-
-// 	cout << "--------waiting for connections--------" << endl;
-// 	for (;;) {
-// 		// pollfd pfd = { listenSocket[listen_size], POLLIN, 0 };
-// 		// fds.push_back(pfd);
-// 		int ret = poll(fds.data(), listen_size, -1);
-// 		cout << "poll triggered"<< endl;
-// 		if (ret > 0) {
-			
-// 			for (size_t i = 0; i < fds.size();i++) {
-// 				if (fds[i].revents & POLLIN) {
-// 					clientSocket = accept(listenSocket[i], (struct sockaddr*)&clientAddress, &clientAddressLength);
-// 					if (clientSocket < 0) {
-// 						cout << "Accept failed";
-// 						return 1;
-// 					}
-// 					pollfd pfd = { clientSocket, POLLIN, 0 };
-// 					fds.push_back(pfd);
-// 					cout << fds.size() << endl;
-// 					// int flags = fcntl(clientSocket, F_GETFL, 0);
-// 					// fcntl(clientSocket, F_SETFL, flags | O_NONBLOCK);
-// 					char buffer[50];
-// 					// string tmp = buffer;
-// 					// string contain;
-// 					// // if (tmp.length() < 4)
-// 					// // 	return 1;
-// 					// cout << tmp.substr(tmp.length() - 4, 4) << endl;
-// 					// if (tmp.substr(tmp.length() - 4, 4) == "\r\n\r\n") {
-						
-// 						// char buf[] = "HTTP/1.1 200 OK\r\nd""Content-Type: text/html\r\n""Connection: close\r\n""\r\n""<!DOCTYPE html>""<html>""<head>""    <title>My Title</title>""</head>""<body>""    <h1>Hello, World!</h1>""    <h1>Hello, World!</h1>""    <h1>Hello, World!</h1>""    <h1>Hello, World!</h1>""</body>""</html>""\r\n\r\n";
-// 							//
-// 							//
-// 						ssize_t recvSize;
-// 						recvSize = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-// 						buffer[recvSize] = '\0';
-// 						cout << "-----------\n";
-// 						std::cout << buffer << std::endl;
-// 						cout << "-----------\n";
-// 						// send(clientSocket, buf, strlen(buf), 0);
-// 						close(clientSocket);
-// 					// }
-// 					// else
-// 					// 	contain += string(buffer);
-// 					break;
-// 				}
-// 			}
-// 		} else if (ret < 0) {
-// 			cout << "Poll failed";
-// 			return 1;
-// 		}
-// 	}
-
-// 	for (int l = 0;l <listen_size;l++) {
-// 		close(listenSocket[l]);
-// 	}
-
-// 	return 0;
-// }
+	commSocket = it->first;
+	bzero(buffer, BUFFER_SIZE);
+	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
+	if(size_readed == -1)
+	{
+		cerr << "error at reading from socket"<< endl;
+		exit(1);
+	}
+	else if(size_readed == 0)
+	{
+		cout << "connection ended"<< endl;
+		close(commSocket);
+		fdMapRead.erase(commSocket);
+		return 0;
+	}
+	else
+	{
+		it->second.request = it->second.request + string(buffer);
+		if(it->second.request.size() > 4  && it->second.request.substr(it->second.request.size() - 4) == "\r\n\r\n")
+		{
+			cout << "full request received!!!"<<endl;
+			it->second.generate_response();
+			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
+			fdMapRead.erase(commSocket);
+			return 0;
+		}
+	}
+	cout << "impossible to reach"<< endl;
+	return 0;
+}
