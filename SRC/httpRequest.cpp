@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/29 13:38:13 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/01 11:44:58 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ extern std::map<int, httpResponse> fdMapWrite;
 extern std::map<int, Server> servers_sockets;
 extern fd_set theFdSetRead[NBOFCLIENTS];
 extern fd_set theFdSetWrite[NBOFCLIENTS];
-
 
 httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
@@ -39,8 +38,8 @@ void	httpRequest::checks_() {
 	size_t start = request.find("\r\n\r\n");
 	start += 4;
 	body_size = request.size() - start;
-	cout << "body size is : " << body_size << " cf bs is : " << servers_sockets[this->server_socket].client_body_size << endl;
-	cout << "URI L ::: " << uri.length() << endl;
+	// cout << "body size is : " << body_size << " cf bs is : " << servers_sockets[this->server_socket].client_body_size << endl;
+	// cout << "URI L ::: " << uri.length() << endl;
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw (std::runtime_error("error 9"));
 		
@@ -54,6 +53,40 @@ void	httpRequest::checks_() {
 	}
 }
 
+void	httpRequest::extract_form_data() {
+	
+	size_t start = request.find("\r\n\r\n");
+	if (start == string::npos)
+			exit (1);
+	start += 4;
+	string data = request.substr(start, request.length());
+	size_t pos = 0;
+	size_t pos_1;
+	size_t pos_2;
+	for (;;) {
+		pos_1 = data.find("=", pos);
+		if (pos_1 == string::npos)
+			break;
+		pos_2 = data.find("&", pos_1);
+		if (pos_2 == string::npos)
+			pos_2 = data.length();
+		// cout << "pos : " << pos << endl;
+		// cout << "pos_1 : " << pos_1 << endl;
+		// cout << "pos_2 : " << pos_2 << endl<< endl;
+		// cout << "|" << data.substr(pos, pos_1 - pos) <<"|"<< endl;
+		// cout << "|" << data.substr(pos_1 + 1, pos_2 - pos_1 - 1) << "|" << endl;
+		form_data[data.substr(pos, pos_1 - pos)] = data.substr(pos_1 + 1, pos_2 - pos_1 - 1);
+		pos = pos_2 + 1;
+		if (pos >= data.length())
+			break ;
+	}
+	
+	// cout << "this is the body : (" << data << ")" << endl;
+	for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+	}
+}
+//(name=aymane&email=ayac%40gmail.com&phone=0623555728)
 void	httpRequest::parce_request() {
 
 	string first_line = request.substr(0, request.find("\n"));
@@ -91,11 +124,12 @@ void	httpRequest::parce_request() {
 		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
 			connection = true;
 	}
+	extract_form_data();
 	checks_();
 }
 
 void	httpRequest::generate_response() {
-	cout << request << endl;
+	// cout << request << endl;
 
 	try {
 		parce_request();
@@ -109,11 +143,11 @@ void	httpRequest::generate_response() {
 		exit (1);
 	}
 	// cout << first_line << endl;
-	cout << "method is >> |" << method  << "|" << endl;
-	cout << "uri is >> |" << uri  << "|" << endl;
-	cout << "http_version is >> |" << http_version  << "|" << endl;
-	cout << "hostname is >> |" << hostname  << "|" << endl;
-	cout << "port is >> |" << port  << "|" << endl;
-	cout << "connection is >> |" << connection  << "|" << endl;
-	cout << "***********************************\n";
+	// cout << "method is >> |" << method  << "|" << endl;
+	// cout << "uri is >> |" << uri  << "|" << endl;
+	// cout << "http_version is >> |" << http_version  << "|" << endl;
+	// cout << "hostname is >> |" << hostname  << "|" << endl;
+	// cout << "port is >> |" << port  << "|" << endl;
+	// cout << "connection is >> |" << connection  << "|" << endl;
+	// cout << "***********************************\n";
 }

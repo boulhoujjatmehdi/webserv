@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 09:43:04 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/01 11:44:21 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ extern std::map<int, Server> servers_sockets;
         request = obj.request;
         filename = obj.filename;
 
-		cout << "filename : ("<< filename<< ")"<< endl;
+		// cout << "filename : ("<< filename<< ")"<< endl;
 		open_file:
         file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 

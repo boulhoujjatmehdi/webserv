@@ -32,6 +32,8 @@ public:
 	int body_size;
 	int content_length;
 
+	std::map<string, string> form_data;
+
     const int& getSocket() const
     {
         return socket;
@@ -61,6 +63,7 @@ public:
     
 	void	generate_response();
 	void	parce_request();
+	void	extract_form_data();
 	void	checks_();
 
 };

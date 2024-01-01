@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 13:37:30 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/01 11:45:23 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	int size_readed;
 	string request;
 	// it->second.content_length = -1;
-	
-	cout << "i is : "  << it->second.content_length << endl;
 
 
 	commSocket = it->first;
@@ -49,7 +47,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	{
 		it->second.request = it->second.request + string(buffer);
 			request = it->second.request;
-		cout << "("<< it->second.method <<")"<< endl;
+		// cout << "("<< it->second.method <<")"<< endl;
 		if(it->second.method.empty())
 		{
 			size_t pos = request.find(" ");
@@ -76,14 +74,14 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 				// cout << "was here2 "<< endl;
 				fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
 				fdMapRead.erase(commSocket);
-				it->second.content_length = -1;
+				// it->second.content_length = -1;
 				return 0;
 			}
 		}
 		
 		if(request.size() > 4  && request.substr(request.size() - 4) == "\r\n\r\n")
 		{
-			cout << "full request received!!!"<<endl;
+			// cout << "full request received!!!"<<endl;
 			it->second.generate_response();
 			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
 			fdMapRead.erase(commSocket);
