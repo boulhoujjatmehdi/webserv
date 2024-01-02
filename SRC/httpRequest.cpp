@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/01 11:44:58 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/02 12:49:51 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ void	httpRequest::extract_form_data() {
 		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
 	}
 }
-//(name=aymane&email=ayac%40gmail.com&phone=0623555728)
+
 void	httpRequest::parce_request() {
 
 	string first_line = request.substr(0, request.find("\n"));

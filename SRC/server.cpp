@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/01 11:45:23 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/02 13:08:16 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,14 @@ fd_set theFdSetWrite[NBOFCLIENTS];
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 {
 	int commSocket;
-	char buffer[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE + 1];
 	int size_readed;
 	string request;
 	// it->second.content_length = -1;
 
 
 	commSocket = it->first;
-	bzero(buffer, BUFFER_SIZE);
+	bzero(buffer, BUFFER_SIZE + 1);
 	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
 	if(size_readed == -1)
 	{
@@ -81,7 +81,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 		
 		if(request.size() > 4  && request.substr(request.size() - 4) == "\r\n\r\n")
 		{
-			// cout << "full request received!!!"<<endl;
+			cout << "full request received!!!"<<endl;
 			it->second.generate_response();
 			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
 			fdMapRead.erase(commSocket);
