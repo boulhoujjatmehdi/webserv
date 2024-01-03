@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parceConfFile.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/27 15:38:20 by eboulhou         ###   ########.fr       */
+/*   Updated: 2023/12/28 09:27:16 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ class Server {
 		Server(const Server& obj);
 		//copy assignment operator
 		Server& operator=(const Server& obj);
-		
 };
 
 class parceConfFile

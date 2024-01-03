@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:55 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 09:44:56 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/02 12:49:02 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ using std::string;
 
 int getMaxFd();
 void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite);
+bool endwith(const std::string& str, const std::string& suffix);
 
 
 

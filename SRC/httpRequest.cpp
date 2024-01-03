@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/02 13:23:58 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/03 15:25:05 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,10 @@ extern std::map<int, Server> servers_sockets;
 extern fd_set theFdSetRead[NBOFCLIENTS];
 extern fd_set theFdSetWrite[NBOFCLIENTS];
 
-
 httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
 	socket = obj.socket;
+	content_length = obj.content_length;
 	server_socket = obj.server_socket;
 	request = obj.request;
 	method = obj.method;
@@ -30,18 +30,14 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	hostname = obj.hostname;
 	port = obj.port;
 	connection = obj.connection;
-	content_length = obj.content_length;
 	return *this;
 }
 
 void	httpRequest::checks_() {
 
-	
 	size_t start = request.find("\r\n\r\n");
 	start += 4;
 	body_size = request.size() - start;
-	// cout << "bsz : " << body_size << endl;
-	// cout << "server bs : "<< servers_sockets[this->server_socket].client_body_size << endl;
 	// cout << "body size is : " << body_size << " cf bs is : " << servers_sockets[this->server_socket].client_body_size << endl;
 	// cout << "URI L ::: " << uri.length() << endl;
 	if (method != "GET" && method != "POST" && method != "DELETE")
@@ -57,16 +53,50 @@ void	httpRequest::checks_() {
 	}
 }
 
+void	httpRequest::extract_form_data() {
+	
+	size_t start = request.find("\r\n\r\n");
+	if (start == string::npos)
+			exit (2);
+	start += 4;
+	string data = request.substr(start, request.length());
+	size_t pos = 0;
+	size_t pos_1;
+	size_t pos_2;
+	for (;;) {
+		pos_1 = data.find("=", pos);
+		if (pos_1 == string::npos)
+			break;
+		pos_2 = data.find("&", pos_1);
+		if (pos_2 == string::npos)
+			pos_2 = data.length();
+		// cout << "pos : " << pos << endl;
+		// cout << "pos_1 : " << pos_1 << endl;
+		// cout << "pos_2 : " << pos_2 << endl<< endl;
+		// cout << "|" << data.substr(pos, pos_1 - pos) <<"|"<< endl;
+		// cout << "|" << data.substr(pos_1 + 1, pos_2 - pos_1 - 1) << "|" << endl;
+		form_data[data.substr(pos, pos_1 - pos)] = data.substr(pos_1 + 1, pos_2 - pos_1 - 1);
+		pos = pos_2 + 1;
+		if (pos >= data.length())
+			break ;
+	}
+	
+	// cout << "this is the body : (" << data << ")" << endl;
+	for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+	}
+}
+
 void	httpRequest::parce_request() {
 
 	string first_line = request.substr(0, request.find("\n"));
 	{
 		size_t pos_1 = request.find(" ");
 		if (pos_1 == string::npos)
-			exit (1);
+			exit (3);
 		size_t pos_2 = request.find(" ", pos_1 + 1);
 		if (pos_2 == string::npos)
-			exit (1);
+			exit (4);
 		method = request.substr(0, pos_1);
 		uri = request.substr(pos_1 + 1, pos_2 - pos_1 - 1);
 		http_version = request.substr(pos_2 + 1, request.find("\n") - pos_2 - 2);
@@ -74,42 +104,43 @@ void	httpRequest::parce_request() {
 	{
 		size_t pos_1 = request.find("Host");
 		if (pos_1 == string::npos)
-			exit (1);
+			exit (5);
 		pos_1 += 6;
 		size_t pos_2 = request.find(":", pos_1);
 		if (pos_2 == string::npos)
-			exit (1);
+			exit (6);
 		hostname = request.substr(pos_1, pos_2 - pos_1);
 		port = request.substr(pos_2 + 1, request.find("\r", pos_2) - pos_2 - 1);
 	}
 	{
 		size_t pos_1 = request.find("Connection");
 		if (pos_1 == string::npos)
-			exit (1);
+			exit (7);
 		pos_1 += 12;
 		size_t pos_2 = request.find("\r", pos_1);
 		if (pos_2 == string::npos)
-			exit (1);
+			exit (8);
 
 		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
 			connection = true;
 	}
+	extract_form_data();
 	checks_();
 }
 
 void	httpRequest::generate_response() {
-
+	// cout << request << endl;
 
 	try {
 		parce_request();
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
-		exit (1);
+		exit (9);
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
-		exit (1);
+		exit (10);
 	}
 	// cout << first_line << endl;
 	// cout << "method is >> |" << method  << "|" << endl;

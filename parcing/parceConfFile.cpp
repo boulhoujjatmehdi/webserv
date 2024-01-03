@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parceConfFile.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/27 15:38:51 by eboulhou         ###   ########.fr       */
+/*   Updated: 2023/12/28 09:27:45 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,8 +244,6 @@ void parceConfFile::check_ifdata_is_valid() {
 	}
 	 
 }
-
-
 
 //copy constructor
 Server::Server(const Server& obj)
