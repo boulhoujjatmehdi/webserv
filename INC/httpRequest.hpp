@@ -65,5 +65,7 @@ public:
 	void	parce_request();
 	void	extract_form_data();
 	void	checks_();
+	void	extract_uri_data();
+
 
 };

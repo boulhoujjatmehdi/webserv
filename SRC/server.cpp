@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/03 11:22:00 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/03 15:23:02 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,7 +320,7 @@ int main()
 		{
 			if(FD_ISSET(it->first, theFdSetRead))
 			{
-				cout << "connect" << endl;
+				// cout << "connect" << endl;
 				acceptNewConnections(it->first);
 
 			}
