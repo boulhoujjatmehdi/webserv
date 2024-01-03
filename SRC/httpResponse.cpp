@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/02 15:29:29 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/03 10:32:32 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ extern std::map<int, Server> servers_sockets;
 		request = obj.request;
 		filename = obj.filename;
 
-		// cout << "filename : ("<< filename<< ")"<< endl;
+		cout << "filename : ("<< filename<< ")"<< endl;
 		open_file:
 		file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
@@ -132,10 +132,9 @@ httpResponse::httpResponse(const httpRequest& obj,string Filename): httpRequest(
 			envp[3] = (char *)"CONTENT_LENGTH=0";
 			envp[4] = NULL;
 
-			filename = "cgi.html";
-			cerr << "filename is " << filename << endl;
+			// cerr << "filename is " << filename << endl;
 			if (execve(filename.c_str(), argv, envp) == -1) {
-				cout << "Error execve" << endl;
+				std::cerr << "Error execve" << endl;
 				exit(1);
 			}
 		} else if (pid < 0) {
@@ -157,6 +156,7 @@ httpResponse::httpResponse(const httpRequest& obj,string Filename): httpRequest(
 			int status;
 			waitpid(pid, &status, 0);
 		}
+		filename = "cgi.html";
 	}
 	else
 		header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
