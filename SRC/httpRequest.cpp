@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/29 17:56:26 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/02 13:23:58 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	hostname = obj.hostname;
 	port = obj.port;
 	connection = obj.connection;
+	content_length = obj.content_length;
 	return *this;
 }
 

@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 20:29:18 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/03 10:32:19 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,24 +24,29 @@ fd_set theFdSetWrite[NBOFCLIENTS];
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 {
 	int commSocket;
-	char buffer[150];
+	char buffer[151];
 	int size_readed;
 	string request;
-	static int content_length = -1;
-
-
 
 	commSocket = it->first;
-	bzero(buffer, 150);
+	bzero(buffer, 151);
 	size_readed = recv(commSocket, buffer, 150, 0);
-	if(size_readed == -1)
+	// cout << "size readed: ("<< size_readed << ") ("<< buffer<< ")"<< endl;
+	// if(size_readed == -1)
+	// {
+	// 	cout << "errno " << errno << endl;
+	// 	cerr << "error at reading from socket" << commSocket << endl;
+	// 	for (std::map<int, httpRequest>::iterator it = fdMapRead.begin() ; it != fdMapRead.end(); it++)
+	// 	{
+	// 		cout << "::: " << it->first << endl;
+	// 	}
+	// 	exit(1);
+	// }
+	// else
+	if(size_readed <= 0)
 	{
-		cerr << "error at reading from socket"<< endl;
-		exit(1);
-	}
-	else if(size_readed == 0)
-	{
-		cout << "connection ended"<< endl;
+		
+		cout << "socket connection ended"<< endl;
 		close(commSocket);
 		// fdMapRead.erase(commSocket);
 		deleteReadFd.push_back(commSocket);
@@ -49,7 +54,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	}
 	else 
 	{
-		it->second.request = it->second.request + string(buffer);
+		it->second.request += string(buffer);
 			request = it->second.request;
 		// cout << "("<< it->second.method <<")"<< endl;
 		if(it->second.method.empty())
@@ -61,17 +66,17 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 		size_t posofend;
 		if(it->second.method == "POST" && (posofend = request.find("\r\n\r\n")) != string::npos)
 		{
-			if(content_length == -1)
+			if(it->second.content_length == -1)
 			{
 				size_t pos = request.find("Content-Length: ");
 				if(pos != string::npos)
 				{
 					pos += 16;
 					string st = request.substr(pos, request.find("\n", pos) - pos);
-					content_length = std::atoi(st.c_str());
+					it->second.content_length = std::atoi(st.c_str());
 				}
 			}
-			if(content_length != -1 &&  (size_t)content_length ==  request.length() - (posofend + 4))
+			if(it->second.content_length != -1 &&  (size_t)it->second.content_length ==  request.length() - (posofend + 4))
 			{
 				// cout << "full request received POST method"<< endl;
 				it->second.generate_response();
@@ -96,7 +101,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	// cout << "("<< request << ")"<< endl;
 	
 	}
-	// cout << "impossible to reach : "<< content_length << " " << size_readed << endl;
+	// cout << "impossible to reach : "<< it->second.content_length << " " << size_readed << endl;
 	return 0;
 }
 
@@ -119,6 +124,13 @@ int getMaxFd()
 		if( it->first > tmp)
 			tmp = it->first;
 	}
+	if(servers_sockets.size() >= 1)
+	{
+		if (servers_sockets.rbegin()->first > tmp)
+		{
+			tmp = servers_sockets.rbegin()->first;
+		}
+	}
 
     return tmp;
 }
@@ -128,7 +140,6 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
     // FD_ZERO(fdRead);
 	bzero(fdRead, sizeof(fdRead) * NBOFCLIENTS);
 	bzero(fdWrite, sizeof(fdWrite) * NBOFCLIENTS);
-
 	for (std::vector<int>::iterator it = deleteReadFd.begin(); it != deleteReadFd.end(); it++)
 		if(fdMapRead.find(*it) != fdMapRead.end())
 			fdMapRead.erase(*it);
@@ -138,6 +149,10 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
 	
 	deleteReadFd.clear();
 	deleteWriteFd.clear();
+	for (std::map<int, Server>::iterator it  = servers_sockets.begin(); it != servers_sockets.end(); it++)
+	{
+		FD_SET(it->first, fdRead);
+	}
     for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
     {
         FD_SET(it->first, fdRead);
@@ -152,6 +167,8 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
 int connectSockets(parceConfFile cf)
 {
 	int port;
+	int nbOfSockets = 0;
+
 	for (int i = 0; i < cf.server_nb ; i ++)
 	{
 		port = std::atoi(cf.server[i].listen[0].c_str());
@@ -203,10 +220,10 @@ int connectSockets(parceConfFile cf)
 
 		// cout <<"test this shit : " <<  servers_sockets[sockfd]->error_pages[0]<< endl;
 		// cout <<"test this shit : " << servers_sockets[sockfd]->location[0].path << endl;
-
-		fdMapRead.insert(std::make_pair(sockfd, httpRequest(-1, -1)));
+		nbOfSockets ++;
+		// fdMapRead.insert(std::make_pair(sockfd, httpRequest(-1, -1)));//TODO: check if this is the problem in case of not using goto in the main loop
 	}
-	return 1;
+	return nbOfSockets;
 }
 
 void acceptNewConnections(int sockfd)
@@ -255,10 +272,10 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	else if(returnNumber == 2)
 	{
 		fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, it->second.server_socket)));
-		cout << "erase 2"<< endl;
+		cout << "erase second : "<< commSocket << " == "<< it->second.connection <<  endl;
 		deleteWriteFd.push_back(commSocket);
 		return 0;
-	}
+	}//TODO: REFRESHING ERROR
 	else
 	{
 		return 1;
@@ -273,8 +290,8 @@ int main()
 	struct timeval timout;
 	timout.tv_sec = 5;
 	timout.tv_usec = 0;
-	connectSockets(cf);
-
+	int nbOfMasterSockets = connectSockets(cf);
+	(void)nbOfMasterSockets;
 	while (1)
 	{
 		debute:
@@ -286,21 +303,18 @@ int main()
 			cout << "select failed!!"<< endl;
 			return 1;
 		}
-		// else if(ret == 0)
-		// {
-		// 	cout << "timeout for all the "<< endl;
-		// 	for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
-		// 	{
-		// 		close(it->first);
-		// 		deleteReadFd.push_back(it->first);
-		// 	}
-		// 	for (std::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
-		// 	{
-		// 		close(it->first);
-		// 		deleteWriteFd.push_back(it->first);
-		// 	}
-		// 	goto debute;
-		// }//TODO: SHOULD NOT ERASE THE SERVER SOCKETS OF CONNECTIONS
+		else if(ret == 0)
+		{
+			cout << "timeout for all the "<< endl;
+			// int i = 0;
+			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
+			{
+				// cout << "timeout for : "<< it->first << endl;
+				close(it->first);
+				deleteReadFd.push_back(it->first);
+			}
+			goto debute;
+		}//TODO: SHOULD CLOSE
 		
 		for(std::map<int, Server>::iterator it = servers_sockets.begin(); it != servers_sockets.end(); it++)
 		{
@@ -308,7 +322,7 @@ int main()
 			{
 				cout << "connect" << endl;
 				acceptNewConnections(it->first);
-				goto debute;
+
 			}
 		}
 		for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
@@ -317,7 +331,6 @@ int main()
 			{
 				cout << "read "<< it->first << endl;
 				readTheRequest(it);
-
 			}
 		}
 		
@@ -327,7 +340,6 @@ int main()
 			{
 				cout << "write " << it->first << endl;
 				writeOnSocket(it);
-
 			}
 		}
 	}

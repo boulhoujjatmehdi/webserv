@@ -30,6 +30,7 @@ public:
 	bool connection;
 	int status;
 	int body_size;
+    int content_length;
 
     const int& getSocket() const
     {
@@ -44,10 +45,10 @@ public:
     httpRequest& operator=(const httpRequest& obj);
 
 
-    httpRequest(int socket ): socket(socket), server_socket(-1), request(""), connection(false)
+    httpRequest(int socket ): socket(socket), server_socket(-1), request(""), connection(false), content_length(-1)
     {
     }
-    httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false)
+    httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false), content_length(-1)
     {
     }
     // httpRequest(): request(""), connection(false)

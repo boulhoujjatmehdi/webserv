@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/29 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 19:56:45 by eboulhou         ###   ########.fr       */
+/*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
+/*   Updated: 2024/01/03 10:35:20 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 	filename = obj.filename;
 	filePos = obj.filePos;
 	fileSize = obj.fileSize;
+	content_length = obj.content_length;
 
 	
 	// cout << "filename : ("<< filename<< ")"<< endl;

@@ -5,7 +5,7 @@ HED = $(wildcard ./INC/*.hpp)
 
 
 CXX = c++ 
-CXXFLAGS= -std=c++98 -Wall -Werror -Wextra
+CXXFLAGS= -std=c++98 -Wall -Werror -Wextra -fsanitize=address -g
 OBJ = $(SRC:.cpp=.o)
 
 all: $(NAME)
