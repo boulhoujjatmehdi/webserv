@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/02 13:08:16 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/03 10:50:46 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 				// cout << "was here1 "<< endl;
 				it->second.generate_response();
 				// cout << "was here2 "<< endl;
-				fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
+				fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
 				fdMapRead.erase(commSocket);
 				// it->second.content_length = -1;
 				return 0;
@@ -83,7 +83,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 		{
 			cout << "full request received!!!"<<endl;
 			it->second.generate_response();
-			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second, "")));
+			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
 			fdMapRead.erase(commSocket);
 			return 0;
 		}
