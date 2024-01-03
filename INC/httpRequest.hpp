@@ -28,9 +28,9 @@ public:
 	string hostname;
 	string port;
 	bool connection;
-	int status;
 	int body_size;
 	int content_length;
+	int status;
 
 	std::map<string, string> form_data;
 
@@ -47,10 +47,10 @@ public:
     httpRequest& operator=(const httpRequest& obj);
 
 
-    httpRequest(int socket ): socket(socket), server_socket(-1), request(""), connection(false), content_length(-1)
+    httpRequest(int socket ): socket(socket), server_socket(-1), request(""), connection(false), content_length(-1) , status(200)
     {
     }
-    httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false), content_length(-1)
+    httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false), content_length(-1), status(200)
     {
     }
     // httpRequest(): request(""), connection(false)
