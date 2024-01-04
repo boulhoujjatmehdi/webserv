@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2023/12/29 16:36:12 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/04 12:48:42 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,5 +50,6 @@ public:
 
     int sendChunk();
     void setData();
+    void execute_cgi();
     // void openFile();
 };
