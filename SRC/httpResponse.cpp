@@ -6,12 +6,13 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/03 12:59:10 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/04 12:43:51 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/server.hpp"
 extern std::map<int, Server> servers_sockets;
+extern char *envv;
 
 httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 {
@@ -114,13 +115,14 @@ void httpResponse::setData()
 	//setting file name with the path associated to it in the config file
 	filename = servers_sockets[server_socket].location[0].path  + uri;
 	
-	// cout << "filename : ("<< filename<< ")"<< endl;
+	cout << "filename : ("<< filename<< ")"<< endl;
 	//TODO: remove the algo and set a default 404 page response
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
 	if(!file.is_open())
 	{
+		// cout << "here--------------->\n";
 		status = 404;
 		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
 		goto open_file;
@@ -128,6 +130,9 @@ void httpResponse::setData()
 
 	filePos = 0;
 	fileSize = file.tellg();
+	if (!file.good()) {
+		cout << "::::::::;\n";
+	}
 	file.seekg(0);
 	
 	//setting the fileSize to a stream
@@ -154,58 +159,70 @@ void httpResponse::setData()
 		header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".js"))
 		header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
-	else if (endwith(filename, ".cgi")) {
-
-		// header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-		cout << "CGI IS DETECTED\n";
-		int fd[2];
-		if (pipe(fd) == -1)
-			exit (10);
-		int filefd = 0;
-		pid_t pid = fork();
-		if (pid == 0) {
-			filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-			cout << "CHILD IS BORN\n";
-			close(fd[0]);
-			dup2(filefd, 1);
-			close(filefd);
-			char *argv[2];
-			argv[0] = (char *)filename.c_str();
-			argv[1] = NULL;
-			char* envp[5];
-			envp[0] = (char *)"QUERY_STRING=query";
-			envp[1] = (char *)"REQUEST_METHOD=GET";
-			envp[2] = (char *)"CONTENT_TYPE=text/plain";
-			envp[3] = (char *)"CONTENT_LENGTH=0";
-			envp[4] = NULL;
-
-			// cerr << "filename is " << filename << endl;
-			if (execve(filename.c_str(), argv, envp) == -1) {
-				std::cerr << "Error execve" << endl;
-				exit(1);
-			}
-		} else if (pid < 0) {
-			cout << "Error fork" << endl;
-		} else {
-			// close(fd[1]);
-			
-			// char buffer[4096];
-			// ssize_t n;
-			// while ((n = read(filefd, buffer, sizeof(buffer) - 1)) > 0) {
-			//     buffer[n] = '\0';  // Null-terminate the string
-			//     // Now buffer contains some output from the child process.
-			//     // You can write this to the client socket.
-			// }
-			// cout << "buffer is (" << buffer << ")" << endl;
-			// if (n == -1)
-			// 	exit(1);
-			
-			int status;
-			waitpid(pid, &status, 0);
-		}
-		filename = "cgi.html";
-	}
+	else if (endwith(filename, ".cgi"))
+		execute_cgi();
 	else
 		header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+}
+
+void	httpResponse::execute_cgi() {
 	
+	if(file.is_open())
+		file.close();
+	cout << "CGI IS DETECTED\n";
+	int filefd = 0;
+	pid_t pid = fork();
+	if (pid == 0) {
+		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+		dup2(filefd, 1);
+		close(filefd);
+		char *argv[2];
+		argv[0] = (char *)filename.c_str();
+		argv[1] = NULL;
+		char* envp[5];
+		envp[0] = (char *)"QUERY_STRING=query";
+		envp[1] = (char *)"REQUEST_METHOD=GET";
+		envp[2] = (char *)"CONTENT_TYPE=text/plain";
+		envp[3] = (char *)"CONTENT_LENGTH=0";
+		envp[4] = NULL;
+
+		if (execve(filename.c_str(), argv, NULL) == -1) {
+			std::cerr << "Error execve" << endl;
+			exit(1);
+		}
+	} else if (pid < 0) {
+		cout << "Error fork" << endl;
+	} else {
+		int status;
+		waitpid(pid, &status, 0);
+	}
+	close(filefd);
+	filename = "./cgi.html";
+		// goto open_file;
+
+	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
+
+	if(!file.is_open())
+	{
+		status = 404;
+		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
+		file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
+		if(!file.is_open()) {
+			cout << "Coudn't open the Error Page" << endl;
+			exit (1);
+		}
+	}
+
+	filePos = 0;
+	fileSize = file.tellg();
+	if (!file.good()) {
+		cout << "Coudn't open the Error Page" << endl;
+		exit (1);
+	}
+	file.seekg(0);
+	
+	//setting the fileSize to a stream
+	std::ostringstream strm;
+	strm << fileSize;
+	header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 }

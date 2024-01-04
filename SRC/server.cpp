@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/03 15:23:02 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/04 11:29:31 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ std::vector<int> deleteReadFd;
 std::vector<int> deleteWriteFd;
 fd_set theFdSetRead[NBOFCLIENTS];
 fd_set theFdSetWrite[NBOFCLIENTS];
+
+char **envv;
 
 
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
@@ -282,8 +284,12 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	}
 }
 
-int main()
+int main(int ac, char **av, char **env)
 {
+	(void)ac;
+	(void)av;
+	envv = env;
+
 	parceConfFile cf;
 	parce_conf_file(cf);
 
