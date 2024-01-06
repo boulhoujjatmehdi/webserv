@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2023/12/28 09:27:45 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/04 18:57:42 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,8 +195,8 @@ void parceConfFile::print_data() {
 			cout << "\tcgi_bin : " << server[i].location[j].cgi_bin  << endl;
 			cout << "\tcgi_extension : " << server[i].location[j].cgi_extension  << endl;
 		}
-		cout << "\t<  nb of locations  >>> " << server[i].location_nb << endl;
-		cout << "----------------------------------" << endl;
+		// cout << "\t<  nb of locations  >>> " << server[i].location_nb << endl;
+		// cout << "----------------------------------" << endl;
 	}
 	cout << "nb of servers : " << server_nb << endl;
 }

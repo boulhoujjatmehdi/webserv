@@ -16,6 +16,16 @@ using std::string;
 #define BUFFER_SIZE 4096
 
 
+enum StatusCode {
+    OK = 200,
+    BadRequest = 400,
+    Unauthorized = 401,
+    Forbidden = 403,
+    NotFound = 404,
+    InternalServerError = 500
+};
+
+
 class httpRequest
 {
 public:
@@ -66,6 +76,7 @@ public:
 	void	extract_form_data();
 	void	checks_();
 	void	extract_uri_data();
+	void	init_status_code();
 
 
 };

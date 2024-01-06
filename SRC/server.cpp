@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/04 11:29:31 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/06 10:51:20 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,14 +284,15 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	}
 }
 
-int main(int ac, char **av, char **env)
+// STATUS CODE
+
+int main(int __unused ac, char __unused **av, char **env)
 {
-	(void)ac;
-	(void)av;
 	envv = env;
 
 	parceConfFile cf;
 	parce_conf_file(cf);
+	init_status_code();
 
 	struct timeval timout;
 	timout.tv_sec = 5;

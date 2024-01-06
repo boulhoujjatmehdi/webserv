@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.5s ease;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        label, input {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Upload File</h2>
+<p>Click on the "Choose File" button to upload a file:</p>
+
+<form id="uploadForm" action="thanks.html" method="post" enctype="multipart/form-data">
+  <label for="myFile">Select a file:</label>
+  <input type="file" id="myFile" name="filename" required>
+  <input type="submit" value="Submit" class="submit-btn" disabled>
+</form>
+
+<script>
+    document.getElementById('myFile').addEventListener('change', function() {
+        if (this.value) {
+            document.querySelector('.submit-btn').disabled = false;
+        } else {
+            document.querySelector('.submit-btn').disabled = true;
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/04 09:26:17 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/06 10:51:33 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	hostname = obj.hostname;
 	port = obj.port;
 	connection = obj.connection;
+	status = obj.status;
 	return *this;
 }
 
@@ -82,8 +83,11 @@ void	httpRequest::extract_form_data() {
 	}
 	
 	// cout << "this is the body : (" << data << ")" << endl;
-	for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
-		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+	if (form_data.size() > 0 && method != "POST") {
+		cout << "DATA passed "<< method << " : (" ;
+		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+		}
 	}
 }
 
@@ -161,15 +165,24 @@ void	httpRequest::extract_uri_data() {
 	}
 }
 
+// void httpRequest::init_status_code() {
+//     status_message[200] = "OK";
+//     status_message[400] = "Bad Request";
+//     status_message[401] = "Unauthorized";
+//     status_message[403] = "Forbidden";
+//     status_message[404] = "Not Found";
+//     status_message[500] = "Internal Server Error";
+// }
+
 void	httpRequest::generate_response() {
-	// cout << request << endl;
+	cout << request << endl;
 
 	try {
 		parce_request();
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
-		exit (1);
+		// exit (1);
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
