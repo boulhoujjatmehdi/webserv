@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/06 10:51:49 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/06 11:41:57 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,9 @@ void init_status_code() {
     status_message[403] = "Forbidden";
     status_message[404] = "Not Found";
     status_message[413] = "Request Entity Too Large";
+    status_message[414] = "Request-URI Too Long";
     status_message[500] = "Internal Server Error";
+	
 }
 
 
@@ -157,7 +159,6 @@ void httpResponse::setData()
 	string my_status;
 	tmp << status;
 	my_status = tmp.str();
-	cout << "-----> "<< status << " --->" << status_message[status] << endl;
 	if (endwith(filename, ".html"))
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".css"))

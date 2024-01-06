@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/06 10:51:20 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/06 11:41:07 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,7 +266,7 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	returnNumber = it->second.sendChunk();
 	if (returnNumber == 1)
 	{
-		cout <<"erase 1"<<endl;
+		// cout <<"erase 1"<<endl;
 		close(commSocket);
 		deleteWriteFd.push_back(commSocket);
 		return 0;
@@ -283,8 +283,6 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 		return 1;
 	}
 }
-
-// STATUS CODE
 
 int main(int __unused ac, char __unused **av, char **env)
 {

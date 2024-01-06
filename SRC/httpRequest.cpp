@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/06 10:51:33 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/06 11:40:11 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void	httpRequest::extract_form_data() {
 	}
 	
 	// cout << "this is the body : (" << data << ")" << endl;
-	if (form_data.size() > 0 && method != "POST") {
+	if (form_data.size() > 0) {
 		cout << "DATA passed "<< method << " : (" ;
 		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
 			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
@@ -158,35 +158,25 @@ void	httpRequest::extract_uri_data() {
 		}
 		
 		uri = uri.substr(0, uri.find("?"));
-		cout << "GET DATA : ";
+		cout << method <<" DATA : ";
 		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
 			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
 		}
 	}
 }
 
-// void httpRequest::init_status_code() {
-//     status_message[200] = "OK";
-//     status_message[400] = "Bad Request";
-//     status_message[401] = "Unauthorized";
-//     status_message[403] = "Forbidden";
-//     status_message[404] = "Not Found";
-//     status_message[500] = "Internal Server Error";
-// }
-
 void	httpRequest::generate_response() {
-	cout << request << endl;
+	// cout << request << endl;
 
 	try {
 		parce_request();
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
-		// exit (1);
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
-		exit (1);
+		exit (10);
 	}
 	// cout << first_line << endl;
 	// cout << "method is >> |" << method  << "|" << endl;
