@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/06 11:40:11 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/06 12:15:50 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,10 @@ void	httpRequest::parce_request() {
 	extract_form_data();
 	extract_uri_data();
 	checks_();
+	size_t sp_pos = uri.find("%20");
+	if (sp_pos != string::npos) {
+		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
+	}
 }
 
 void	httpRequest::extract_uri_data() {
