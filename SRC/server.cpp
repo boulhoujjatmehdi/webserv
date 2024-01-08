@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/03 11:22:00 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/07 12:08:01 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,43 +20,30 @@ std::vector<int> deleteWriteFd;
 fd_set theFdSetRead[NBOFCLIENTS];
 fd_set theFdSetWrite[NBOFCLIENTS];
 
+char **envv;
 
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 {
 	int commSocket;
-	char buffer[151];
+	char buffer[BUFFER_SIZE + 1];
 	int size_readed;
 	string request;
 
 	commSocket = it->first;
-	bzero(buffer, 151);
-	size_readed = recv(commSocket, buffer, 150, 0);
-	// cout << "size readed: ("<< size_readed << ") ("<< buffer<< ")"<< endl;
-	// if(size_readed == -1)
-	// {
-	// 	cout << "errno " << errno << endl;
-	// 	cerr << "error at reading from socket" << commSocket << endl;
-	// 	for (std::map<int, httpRequest>::iterator it = fdMapRead.begin() ; it != fdMapRead.end(); it++)
-	// 	{
-	// 		cout << "::: " << it->first << endl;
-	// 	}
-	// 	exit(1);
-	// }
-	// else
+	bzero(buffer, BUFFER_SIZE + 1);
+	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
+
 	if(size_readed <= 0)
 	{
-		
-		// cout << "socket connection ended"<< endl;
+		cout << "socket connection ended"<< endl;
 		close(commSocket);
-		// fdMapRead.erase(commSocket);
 		deleteReadFd.push_back(commSocket);
 		return 0;
 	}
 	else 
 	{
-		it->second.request += string(buffer);
-			request = it->second.request;
-		// cout << "("<< it->second.method <<")"<< endl;
+		it->second.request.append(buffer, size_readed);
+		request = it->second.request;
 		if(it->second.method.empty())
 		{
 			size_t pos = request.find(" ");
@@ -78,32 +65,64 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 			}
 			if(it->second.content_length != -1 &&  (size_t)it->second.content_length ==  request.length() - (posofend + 4))
 			{
-				// cout << "full request received POST method"<< endl;
 				it->second.generate_response();
 				fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
 				fdMapWrite[commSocket].setData();
-				// fdMapRead.erase(commSocket);
 				deleteReadFd.push_back(commSocket);
 			}
 				return 0;
 		}
 		if(request.size() > 4  && request.substr(request.size() - 4) == "\r\n\r\n")
 		{
-			// cout << "full request received with GET method"<<endl;
 			it->second.generate_response();
 			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
 			fdMapWrite[commSocket].setData();
-			// fdMapRead.erase(commSocket);
 			deleteReadFd.push_back(commSocket);
 			return 0;
 		}
-		
-	// cout << "("<< request << ")"<< endl;
-	
 	}
-	// cout << "impossible to reach : "<< it->second.content_length << " " << size_readed << endl;
 	return 0;
 }
+
+// int  readTheRequest(std::map<int, httpRequest>::iterator& it)
+// {
+// 	int commSocket;
+// 	char buffer[BUFFER_SIZE + 1];
+// 	int size_readed;
+// 	string request;
+
+// 	commSocket = it->first;
+// 	bzero(buffer, BUFFER_SIZE + 1);
+// 	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
+
+// 	if(size_readed <= 0)
+// 	{
+// 		cout << "socket connection ended"<< endl;
+// 		close(commSocket);
+// 		deleteReadFd.push_back(commSocket);
+// 		return 0;
+// 	}
+// 	else 
+// 	{
+// 		it->second.request.append(buffer, size_readed);
+// 		request = it->second.request;
+// 		if(it->second.method.empty())
+// 		{
+// 			size_t pos = request.find(" ");
+// 			if(pos != string::npos)
+// 				it->second.method = request.substr(0, pos);
+// 		}
+// 		if (size_readed < BUFFER_SIZE)
+// 		{
+// 			it->second.generate_response();
+// 			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
+// 			fdMapWrite[commSocket].setData();
+// 			deleteReadFd.push_back(commSocket);
+// 			return 0;
+// 		}
+// 	}
+// 	return 0;
+// }
 
 int  readTheRequest(std::map<int, httpRequest>::iterator& it);
 int getMaxFd()
@@ -282,8 +301,12 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	}
 }
 
-int main()
+int main(int ac, char **av, char **env)
 {
+	(void)ac;
+	(void)av;
+	envv = env;
+
 	parceConfFile cf;
 	parce_conf_file(cf);
 
@@ -320,7 +343,7 @@ int main()
 		{
 			if(FD_ISSET(it->first, theFdSetRead))
 			{
-				cout << "connect" << endl;
+				// cout << "connect" << endl;
 				acceptNewConnections(it->first);
 
 			}
