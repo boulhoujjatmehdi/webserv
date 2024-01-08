@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 12:18:23 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/08 13:06:34 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	if(size_readed <= 0)
 	{
 		
-		// cout << "socket connection ended"<< endl;
+		cout << "socket connection ended " << request << endl;
 		close(commSocket);
 		// fdMapRead.erase(commSocket);
 		deleteReadFd.push_back(commSocket);
@@ -57,7 +57,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	}
 	else 
 	{
-		cout << buffer << endl;
+		// cout << buffer << endl;
 		it->second.request.append(buffer, size_readed);
 			request = it->second.request;
 		// cout << "("<< it->second.method <<")"<< endl;
@@ -70,9 +70,6 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 		size_t posofend;
 		if(it->second.method == "POST" && (posofend = request.find("\r\n\r\n")) != string::npos)
 		{
-			static int ii = 0;
-			if(ii == 0)
-				cout << request << endl;
 			if(it->second.content_length == -1)
 			{
 				size_t pos = request.find("Content-Length: ");
@@ -315,7 +312,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		}
 		else if(ret == 0)
 		{
-			// cout << "timeout for all the "<< endl;
+			cout << "timeout for all the "<< endl;
 			// int i = 0;
 			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 			{
@@ -330,7 +327,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		{
 			if(FD_ISSET(it->first, theFdSetRead))
 			{
-				// cout << "connect" << endl;
+				cout << "connect" << endl;
 				acceptNewConnections(it->first);
 
 			}
@@ -339,7 +336,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		{
 			if(FD_ISSET(it->first, theFdSetRead))
 			{
-				// cout << "read "<< it->first << endl;
+				cout << "read "<< it->first << endl;
 				readTheRequest(it);
 			}
 		}
@@ -348,7 +345,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		{
 			if(FD_ISSET(it->first, theFdSetWrite))
 			{
-				// cout << "write " << it->first << endl;
+				cout << "write " << it->first << endl;
 				writeOnSocket(it);
 			}
 		}

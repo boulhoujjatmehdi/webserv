@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/06 12:06:48 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 13:44:41 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ httpResponse::httpResponse(const httpRequest& obj):httpRequest(obj), header_sent
 {
 }
 
-void httpResponse::setData()
+void httpResponse::openTheAppropriateFile()
 {
 	//setting the uri in case of '/' at uri
 	if (uri == "/")
@@ -150,11 +150,19 @@ void httpResponse::setData()
 		cout << "::::::::;\n";
 	}
 	file.seekg(0);
+}
+
+
+
+void httpResponse::setData()
+{
+
+	openTheAppropriateFile();
 	
 	//setting the fileSize to a stream
 	std::ostringstream strm;
 	strm << fileSize;
-
+	
 	std::ostringstream tmp;
 	string my_status;
 	tmp << status;

@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/08 12:02:52 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/08 13:05:03 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,7 @@ void httpRequest::upload_files()
 	if (method == "POST")
 	{
 		size_t start = request.find("\r\n\r\n");
-		cout << request.substr(0, start + 100)<< endl;
+		// cout << request.substr(0, start + 100)<< endl;
 		if (start == std::string::npos)
 			return;
 		string sup;
