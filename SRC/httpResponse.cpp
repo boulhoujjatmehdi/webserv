@@ -3,16 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/05 15:54:42 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/06 12:06:48 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/server.hpp"
 extern std::map<int, Server> servers_sockets;
 extern char *envv;
+
+//STATUS CODE
+std::map<int, string> status_message;
+
+void init_status_code() {
+    status_message[200] = "OK";
+    status_message[400] = "Bad Request";
+    status_message[401] = "Unauthorized";
+    status_message[403] = "Forbidden";
+    status_message[404] = "Not Found";
+    status_message[413] = "Request Entity Too Large";
+    status_message[414] = "Request-URI Too Long";
+    status_message[500] = "Internal Server Error";
+	
+}
+
 
 httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 {
@@ -115,7 +131,7 @@ void httpResponse::setData()
 	//setting file name with the path associated to it in the config file
 	filename = servers_sockets[server_socket].location[0].path  + uri;
 	
-	cout << "filename : ("<< filename<< ")"<< endl;
+	// cout << "filename : ("<< filename<< ")"<< endl;
 	//TODO: remove the algo and set a default 404 page response
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
@@ -123,7 +139,7 @@ void httpResponse::setData()
 	if(!file.is_open())
 	{
 		// cout << "here--------------->\n";
-		status = 404;
+		// status = 404;
 		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
 		goto open_file;
 	}
@@ -139,32 +155,29 @@ void httpResponse::setData()
 	std::ostringstream strm;
 	strm << fileSize;
 
-	// AYMANE CHANGES
-	std::istringstream tmp(status);
+	std::ostringstream tmp;
 	string my_status;
-	tmp >> my_status;
-	// cout << "my_status ---------------->" << status <<"|"<< endl;
-		// header = "HTTP/1.1 " + my_status + " OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+	tmp << status;
+	my_status = tmp.str();
 	if (endwith(filename, ".html"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".css"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: text/css; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/css; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+	else if (endwith(filename, ".scss"))
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/scss; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".png"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: image/png; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: image/png; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".jpeg"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: image/jpeg; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: image/jpeg; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".jpg"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: image/jpg; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: image/jpg; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".js"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
-	else if (endwith(filename, ".js"))
-		header = "HTTP/1.1 200 OK\r\nContent-Type: text/javascript; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
-	else if (endwith(filename, ".cgi"))
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/javascript; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+	else if (endwith(filename, servers_sockets[server_socket].location[0].cgi_extension))
 		execute_cgi();
 	else
-		header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 }
-
 
 void	httpResponse::execute_cgi() {
 	
@@ -198,7 +211,7 @@ void	httpResponse::execute_cgi() {
 
 	if(!file.is_open())
 	{
-		status = 404;
+		// status = 404;
 		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
 		file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 		if(!file.is_open()) {
@@ -218,5 +231,9 @@ void	httpResponse::execute_cgi() {
 	//setting the fileSize to a stream
 	std::ostringstream strm;
 	strm << fileSize;
-	header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+	std::ostringstream tmp;
+	string my_status;
+	tmp << status;
+	my_status = tmp.str();
+	header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 }

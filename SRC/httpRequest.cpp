@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/03 15:25:05 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/06 12:15:50 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	hostname = obj.hostname;
 	port = obj.port;
 	connection = obj.connection;
+	status = obj.status;
 	return *this;
 }
 
@@ -57,7 +58,7 @@ void	httpRequest::extract_form_data() {
 	
 	size_t start = request.find("\r\n\r\n");
 	if (start == string::npos)
-			exit (2);
+		exit (1);
 	start += 4;
 	string data = request.substr(start, request.length());
 	size_t pos = 0;
@@ -82,8 +83,11 @@ void	httpRequest::extract_form_data() {
 	}
 	
 	// cout << "this is the body : (" << data << ")" << endl;
-	for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
-		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+	if (form_data.size() > 0) {
+		cout << "DATA passed "<< method << " : (" ;
+		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+		}
 	}
 }
 
@@ -93,10 +97,10 @@ void	httpRequest::parce_request() {
 	{
 		size_t pos_1 = request.find(" ");
 		if (pos_1 == string::npos)
-			exit (3);
+			exit (1);
 		size_t pos_2 = request.find(" ", pos_1 + 1);
 		if (pos_2 == string::npos)
-			exit (4);
+			exit (1);
 		method = request.substr(0, pos_1);
 		uri = request.substr(pos_1 + 1, pos_2 - pos_1 - 1);
 		http_version = request.substr(pos_2 + 1, request.find("\n") - pos_2 - 2);
@@ -104,28 +108,65 @@ void	httpRequest::parce_request() {
 	{
 		size_t pos_1 = request.find("Host");
 		if (pos_1 == string::npos)
-			exit (5);
+			exit (1);
 		pos_1 += 6;
 		size_t pos_2 = request.find(":", pos_1);
 		if (pos_2 == string::npos)
-			exit (6);
+			exit (1);
 		hostname = request.substr(pos_1, pos_2 - pos_1);
 		port = request.substr(pos_2 + 1, request.find("\r", pos_2) - pos_2 - 1);
 	}
 	{
 		size_t pos_1 = request.find("Connection");
 		if (pos_1 == string::npos)
-			exit (7);
+			exit (1);
 		pos_1 += 12;
 		size_t pos_2 = request.find("\r", pos_1);
 		if (pos_2 == string::npos)
-			exit (8);
+			exit (1);
 
 		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
 			connection = true;
 	}
 	extract_form_data();
+	extract_uri_data();
 	checks_();
+	size_t sp_pos = uri.find("%20");
+	if (sp_pos != string::npos) {
+		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
+	}
+}
+
+void	httpRequest::extract_uri_data() {
+	
+	if (uri.find("?") != string::npos) {
+		size_t start = uri.find("?");
+		if (start == string::npos)
+			exit (1);
+		start += 1;
+		string data = uri.substr(start, uri.length());
+		size_t pos = 0;
+		size_t pos_1;
+		size_t pos_2;
+		for (;;) {
+			pos_1 = data.find("=", pos);
+			if (pos_1 == string::npos)
+				break;
+			pos_2 = data.find("&", pos_1);
+			if (pos_2 == string::npos)
+				pos_2 = data.length();
+			form_data[data.substr(pos, pos_1 - pos)] = data.substr(pos_1 + 1, pos_2 - pos_1 - 1);
+			pos = pos_2 + 1;
+			if (pos >= data.length())
+				break ;
+		}
+		
+		uri = uri.substr(0, uri.find("?"));
+		cout << method <<" DATA : ";
+		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+		}
+	}
 }
 
 void	httpRequest::generate_response() {
@@ -136,7 +177,6 @@ void	httpRequest::generate_response() {
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
-		exit (9);
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
