@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/06 11:41:07 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 14:33:29 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	}
 	else 
 	{
-		it->second.request += string(buffer);
+		it->second.request.append(buffer, size_readed);
 			request = it->second.request;
 		// cout << "("<< it->second.method <<")"<< endl;
 		if(it->second.method.empty())

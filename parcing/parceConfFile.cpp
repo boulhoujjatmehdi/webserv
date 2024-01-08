@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/04 18:57:42 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 14:37:11 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,14 @@ parceConfFile::~parceConfFile() {}
 void parceConfFile::read_conf_file() {
 
 	std::ifstream file("./default.conf");
-    if (!file) {
-        std::cout << "error : open file";
-        return ;
-    }
-    std::string input;
-    for(int i = 0; std::getline(file, input); i++)
-        data.push_back(input);
-    file.close();			
+	if (!file) {
+		std::cout << "error : open file";
+		return ;
+	}
+	std::string input;
+	for(int i = 0; std::getline(file, input); i++)
+		data.push_back(input);
+	file.close();			
 }
 
 string parceConfFile::my_trim(string str) {
@@ -43,10 +43,11 @@ string parceConfFile::my_trim(string str) {
 	return (str.substr(first, last));
 }
 
-void	parceConfFile::my_location(Server &serv) {
+void	parceConfFile::my_location(Server &serv, string location_name) {
 
 	string token;
 	Location local;
+	local.name = location_name;
 	it_data++;
 	for (;it_data != data.end(); it_data++) {
 
@@ -145,18 +146,20 @@ void parceConfFile::fill_data() {
 					if (!(str >> token) || (token.empty() || token != ";"))
 						throw(std::runtime_error("Syntax Error ';'4"));
 				}
-				else if (token == "root" && (str >> token)) {
-					serv.root = token;
-					if (!(str >> token) || (token.empty() || token != ";"))
-						throw(std::runtime_error("Syntax Error ';'5"));
-				}
-				else if ((token == "location")) {
+				else if ((token == "location") && (str >> token)) {
+					string location_name = token;
+					// cout << "toekn is : " << token << endl;
 					if (!(str >> token) || (token != "{"))
 						throw(std::runtime_error("Syntax Error in {}"));
-					my_location(serv);
+					my_location(serv, location_name);
 				}
 				else
 					throw(std::runtime_error("Syntax Error brackets"));
+				// else if (token == "root" && (str >> token)) {
+				// 	serv.root = token;
+				// 	if (!(str >> token) || (token.empty() || token != ";"))
+				// 		throw(std::runtime_error("Syntax Error ';'5"));
+				// }
 			}
 			serv.location_nb = serv.location.size();
 			server.push_back(serv);
@@ -177,14 +180,14 @@ void parceConfFile::print_data() {
 		cout << endl;
 		cout << "server_name : " << server[i].server_name << endl;
 		cout << "client_body_size : " << server[i].client_body_size << endl;
-		cout << "root : " << server[i].root << endl;
+		// cout << "root : " << server[i].root << endl;
 		cout << "error_pages : ";
 		vector<string>::iterator it = server[i].error_pages.begin();
 		for (;it != server[i].error_pages.end();it++)
 			cout << *it << ", ";
 		cout << endl;
 		for (int j = 0; (size_t)j < server[i].location.size();j++) {
-			cout << "Location : \n";
+			cout << "Location : " << server[i].location[j].name << endl;
 			cout << "\tpath : " << server[i].location[j].path  << endl;
 			cout << "\tdefault_file : " << server[i].location[j].default_file  << endl;
 			cout << "\tmethods : ";
@@ -208,7 +211,7 @@ void parceConfFile::check_ifdata_isnot_empty() {
 	for (int i = 0;i < server_nb; i++) {
 	
 		if (server[i].listen.size() == 0 || server[i].server_name.empty() || server[i].error_pages.size() == 0 || 
-			server[i].client_body_size == -1 || server[i].root.empty() || server[i].location.size() == 0)
+			server[i].client_body_size == -1 || server[i].location.size() == 0)
 				throw(std::runtime_error("Syntax Error in ONE of the attributes"));
 		for (int j = 0; (size_t)j < server[i].location.size();j++) {
 			if (server[i].location[j].path.empty() || server[i].location[j].default_file.empty() || 
@@ -237,9 +240,18 @@ void parceConfFile::check_ifdata_is_valid() {
 				if (server[i].location[j].methods[l] == "GET" || server[i].location[j].methods[l] == "POST" || 
 				server[i].location[j].methods[l] == "DELETE")
 					check++;
-			}	
+			}
 			if (check != 3)
 				throw(std::runtime_error("Syntax Error in the location METHODS"));
+		}
+		for (size_t j = 0; j < server[i].location.size(); j++) {
+
+			for (size_t l = j + 1; l < server[i].location.size(); l++) {
+
+				if (server[i].location[j].name == server[i].location[l].name) {
+					throw(std::runtime_error("Duplicate Location"));
+				}
+			}
 		}
 	}
 	 
@@ -252,7 +264,7 @@ Server::Server(const Server& obj)
 	server_name = obj.server_name;
 	error_pages = obj.error_pages;
 	client_body_size = obj.client_body_size;
-	root = obj.root;
+	// root = obj.root;
 	location = obj.location;
 	location_nb = obj.location_nb;
 }
@@ -263,7 +275,7 @@ Server& Server::operator=(const Server& obj)
 	server_name = obj.server_name;
 	error_pages = obj.error_pages;
 	client_body_size = obj.client_body_size;
-	root = obj.root;
+	// root = obj.root;
 	location = obj.location;
 	location_nb = obj.location_nb;
 	return *this;

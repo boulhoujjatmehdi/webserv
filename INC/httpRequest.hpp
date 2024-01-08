@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   httpRequest.hpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/06 19:38:13 by aachfenn          #+#    #+#             */
+/*   Updated: 2024/01/08 10:25:02 by aachfenn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <iostream>
@@ -65,7 +77,5 @@ public:
 	void	extract_form_data();
 	void	checks_();
 	void	extract_uri_data();
-	void	init_status_code();
-
-
+	void	upload_files();
 };

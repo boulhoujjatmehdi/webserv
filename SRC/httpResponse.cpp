@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/06 12:06:48 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 09:59:45 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,6 @@ void httpResponse::setData()
 
 	if(!file.is_open())
 	{
-		// cout << "here--------------->\n";
 		// status = 404;
 		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
 		goto open_file;
@@ -203,12 +202,8 @@ void	httpResponse::execute_cgi() {
 		int status;
 		waitpid(pid, &status, 0);
 	}
-	close(filefd);
 	filename = "./cgi.html";
-		// goto open_file;
-
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-
 	if(!file.is_open())
 	{
 		// status = 404;

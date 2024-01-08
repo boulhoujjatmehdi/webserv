@@ -38,6 +38,24 @@
             display: block;
             margin-bottom: 10px;
         }
+		progress {
+            width: 100%;
+            height: 20px;
+        }
+        progress[value] {
+            /* Reset the default appearance */
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        progress[value]::-webkit-progress-bar {
+            background-color: #eee;
+            border-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+        }
+        progress[value]::-webkit-progress-value {
+            background-color: #4CAF50;
+            border-radius: 2px; 
+        }
     </style>
 </head>
 <body>
@@ -49,6 +67,9 @@
   <label for="myFile">Select a file:</label>
   <input type="file" id="myFile" name="filename" required>
   <input type="submit" value="Submit" class="submit-btn" disabled>
+
+  <!-- Add a progress bar -->
+  <progress id="uploadProgress" value="0" max="100"></progress>
 </form>
 
 <script>
@@ -58,6 +79,29 @@
         } else {
             document.querySelector('.submit-btn').disabled = true;
         }
+    });
+
+    // Handle form submission
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var fileInput = document.getElementById('myFile');
+        var file = fileInput.files[0];
+        var formData = new FormData();
+        formData.append('filename', file);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'thanks.html', true);
+
+        // Update progress bar during upload
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                var percentComplete = (e.loaded / e.total) * 100;
+                document.getElementById('uploadProgress').value = percentComplete;
+            }
+        });
+
+        xhr.send(formData);
     });
 </script>
 
