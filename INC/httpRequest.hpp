@@ -66,6 +66,7 @@ public:
 	void	checks_();
 	void	extract_uri_data();
 	void	init_status_code();
+    void    upload_files();
 
 
 };

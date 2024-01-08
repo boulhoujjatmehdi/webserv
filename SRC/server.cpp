@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/06 11:41:07 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 12:18:23 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,14 @@ char **envv;
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 {
 	int commSocket;
-	char buffer[151];
+	char buffer[BUFFER_SIZE + 1];
 	int size_readed;
 	string request;
 
 	commSocket = it->first;
-	bzero(buffer, 151);
-	size_readed = recv(commSocket, buffer, 150, 0);
+	bzero(buffer, BUFFER_SIZE + 1);
+	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
+	
 	// cout << "size readed: ("<< size_readed << ") ("<< buffer<< ")"<< endl;
 	// if(size_readed == -1)
 	// {
@@ -56,7 +57,8 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	}
 	else 
 	{
-		it->second.request += string(buffer);
+		cout << buffer << endl;
+		it->second.request.append(buffer, size_readed);
 			request = it->second.request;
 		// cout << "("<< it->second.method <<")"<< endl;
 		if(it->second.method.empty())
@@ -68,6 +70,9 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 		size_t posofend;
 		if(it->second.method == "POST" && (posofend = request.find("\r\n\r\n")) != string::npos)
 		{
+			static int ii = 0;
+			if(ii == 0)
+				cout << request << endl;
 			if(it->second.content_length == -1)
 			{
 				size_t pos = request.find("Content-Length: ");

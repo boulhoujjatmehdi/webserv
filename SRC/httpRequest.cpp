@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/06 12:15:50 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 12:02:52 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,12 +83,12 @@ void	httpRequest::extract_form_data() {
 	}
 	
 	// cout << "this is the body : (" << data << ")" << endl;
-	if (form_data.size() > 0) {
-		cout << "DATA passed "<< method << " : (" ;
-		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
-			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
-		}
-	}
+	// if (form_data.size() > 0) {
+	// 	cout << "DATA passed "<< method << " : (" ;
+	// 	for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+	// 		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+	// 	}
+	// }
 }
 
 void	httpRequest::parce_request() {
@@ -162,9 +162,86 @@ void	httpRequest::extract_uri_data() {
 		}
 		
 		uri = uri.substr(0, uri.find("?"));
-		cout << method <<" DATA : ";
-		for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
-			cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+		// cout << method <<" DATA : ";
+		// for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
+		// 	cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
+		// }
+	}
+}
+
+void httpRequest::upload_files()
+{
+	if (method == "POST")
+	{
+		size_t start = request.find("\r\n\r\n");
+		cout << request.substr(0, start + 100)<< endl;
+		if (start == std::string::npos)
+			return;
+		string sup;
+		std::string body;
+		start += 4;
+		body = request.substr(start, request.size());
+		size_t end = body.find("\r\n");
+		if (end == std::string::npos)
+			return;
+		sup = body.substr(0, end);
+		body = body.substr(end + 1, body.size());
+		size_t t = body.find(sup);
+		if (t == std::string::npos)
+			return;
+		body = body.substr(0, t);
+
+		string name;
+		string filename;
+		string Content_Type;
+		std::istringstream iss(body);
+		string line1;
+		string line2;
+		bool upload = false;
+		while (std::getline(iss, line1))
+		{
+			std::istringstream iss2(line1);
+			string tmp;
+			if (iss2 >> tmp && tmp == "Content-Disposition:" && iss2 >> tmp && tmp == "form-data;")
+			{
+				std::getline(iss, line2);
+				upload = true;
+				break;
+			}
+		}
+		if (upload)
+		{
+			std::istringstream iss3(line2);
+			string tmp;
+			if (!(iss3 >> tmp && tmp == "Content-Type:"))
+				return;
+			iss3 >> Content_Type;
+			std::istringstream iss4(line1);
+			vector<string> vec;
+			while (std::getline(iss4, tmp, ';'))
+			{
+				vec.push_back(tmp);
+			}
+			if (vec[1].substr(0, vec[1].find('=')) == " name")
+			{
+				name = vec[1].substr(vec[1].find('=') + 2, vec[1].size() - vec[1].find('"') - 2);
+			}
+			if (vec[2].substr(0, vec[2].find('=')) == " filename")
+				filename = vec[2].substr(vec[2].find('=') + 2, vec[2].size() - vec[2].find('"') - 3);
+			if (filename.empty())
+				return;
+			std::ofstream file;
+			file.open("./upload/" + filename);
+			start = 0;
+			for (int i = 0; i < 4; ++i)
+			{
+				while (body[start] != '\n' && start < body.size())
+					start += 1;
+				start++;
+			}
+			string data = body.substr(start, body.size());
+			file << data;
+			file.close();
 		}
 	}
 }
@@ -189,5 +266,8 @@ void	httpRequest::generate_response() {
 	// cout << "hostname is >> |" << hostname  << "|" << endl;
 	// cout << "port is >> |" << port  << "|" << endl;
 	// cout << "connection is >> |" << connection  << "|" << endl;
-	// cout << "***********************************\n";
+	cout << "***********************************\n";	
+	
+	upload_files();
+	cout << "1111111"<<endl;
 }
