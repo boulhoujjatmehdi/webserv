@@ -31,6 +31,9 @@ public:
 	int content_length;
 	int status;
 
+    string location;
+    string simple_uri;
+
 	std::map<string, string> form_data;
 
     const int& getSocket() const

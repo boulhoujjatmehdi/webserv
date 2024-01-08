@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 13:41:47 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/08 16:54:17 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "httpRequest.hpp"
 #include <sys/socket.h>
 #include <sys/types.h>
+#include "../parcing/parceConfFile.hpp"
 
 
 
@@ -32,6 +33,10 @@ public:
     int last_send;
     std::streamsize filePos;
     std::streamsize fileSize;
+    
+    Location* classLocation;
+    
+    
 
     const std::ifstream& getFile()const
     {

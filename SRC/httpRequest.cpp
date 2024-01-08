@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/08 13:05:03 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/08 17:13:22 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ extern fd_set theFdSetWrite[NBOFCLIENTS];
 
 httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
+	location  = obj.location;
+	simple_uri = obj.simple_uri;
 	socket = obj.socket;
 	content_length = obj.content_length;
 	server_socket = obj.server_socket;
@@ -135,6 +137,15 @@ void	httpRequest::parce_request() {
 	if (sp_pos != string::npos) {
 		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
 	}
+	// extract location from uri
+	
+	size_t pos = uri.find("/", 1);
+	if (pos != string::npos) {
+		location = uri.substr(1, pos - 1);
+		simple_uri = uri.substr(pos, uri.length());
+	}
+	// cout << "location is : |" << location << "|" << endl;
+	// cout << "simple_uri is : |" << simple_uri << "|" << endl;
 }
 
 void	httpRequest::extract_uri_data() {
@@ -251,6 +262,7 @@ void	httpRequest::generate_response() {
 
 	try {
 		parce_request();
+		upload_files();//TODO: RETURN TO THROW
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
@@ -259,15 +271,12 @@ void	httpRequest::generate_response() {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
 		exit (10);
 	}
+	// cout << "uri is >> |" << uri  << "|" << endl;
+
 	// cout << first_line << endl;
 	// cout << "method is >> |" << method  << "|" << endl;
-	// cout << "uri is >> |" << uri  << "|" << endl;
 	// cout << "http_version is >> |" << http_version  << "|" << endl;
 	// cout << "hostname is >> |" << hostname  << "|" << endl;
 	// cout << "port is >> |" << port  << "|" << endl;
 	// cout << "connection is >> |" << connection  << "|" << endl;
-	cout << "***********************************\n";	
-	
-	upload_files();
-	cout << "1111111"<<endl;
 }

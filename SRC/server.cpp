@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 13:06:34 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/08 17:42:41 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,11 +286,48 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	}
 }
 
+void createHtmlFile() {
+	std::ofstream file;
+	file.open("404Error.html");
+	if(!file.is_open())
+	{
+		std::cerr << "default pages failed to open"<< endl;
+		exit(12);
+	}
+
+	file << "<!DOCTYPE html>\n"
+		 << "<html>\n"
+		 << "<head>\n"
+		 << "<title>404 Not Found</title>\n"
+		 << "<style>\n"
+		 << "body {\n"
+		 << "    font-family: Arial, sans-serif;\n"
+		 << "    background-color: #f4f4f4;\n"
+		 << "    text-align: center;\n"
+		 << "}\n"
+		 << "h1 {\n"
+		 << "    color: #333;\n"
+		 << "}\n"
+		 << "p {\n"
+		 << "    color: #777;\n"
+		 << "}\n"
+		 << "</style>\n"
+		 << "</head>\n"
+		 << "<body>\n"
+		 << "<h1>404 Not Found</h1>\n"
+		 << "<p>The requested page could not be found.</p>\n"
+		 << "</body>\n"
+		 << "</html>\n";
+
+	file.close();
+}
+
 int main(int __unused ac, char __unused **av, char **env)
 {
 	envv = env;
 
 	parceConfFile cf;
+	createHtmlFile();
 	parce_conf_file(cf);
 	init_status_code();
 
@@ -312,7 +349,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		}
 		else if(ret == 0)
 		{
-			cout << "timeout for all the "<< endl;
+			// cout << "timeout for all the "<< endl;
 			// int i = 0;
 			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 			{

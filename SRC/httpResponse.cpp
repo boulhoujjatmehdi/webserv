@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 13:44:41 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/08 17:54:46 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ void init_status_code() {
 
 httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 {
+	classLocation = obj.classLocation;
 	socket = obj.socket;
 	header_sent = obj.header_sent;
 	header = obj.header;
@@ -56,7 +57,6 @@ httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 	// filePos = 0;
 	// fileSize = file.tellg();
 	// file.seekg(0);
-
 	
 }
 
@@ -124,23 +124,60 @@ httpResponse::httpResponse(const httpRequest& obj):httpRequest(obj), header_sent
 
 void httpResponse::openTheAppropriateFile()
 {
+	string pathToFile;
+	classLocation = NULL;
+	// cout << "empty : " << location.size() << "    " << location << endl;
+	if(location.empty() && uri == "/")
+		location = "/";
+	for(size_t i = 0 ; (i < servers_sockets[server_socket].location.size()); i++)
+	{
+		// cout << servers_sockets[server_socket].location[i].name << " ********** "<<  this->location << endl;
+		if(servers_sockets[server_socket].location[i].name == this->location)
+		{
+			classLocation = &servers_sockets[server_socket].location[i];
+			pathToFile = servers_sockets[server_socket].location[i].path;
+			pathToFile += (location == "/")? '/' + servers_sockets[server_socket].location[i].default_file: simple_uri;
+			// if (simple_uri == "/" || (location == "/" && simple_uri.empty()))
+			// 	pathToFile += classLocation->default_file;//TODO: tomorowland 
+		}
+	}
+	if(pathToFile.empty())
+	{
+		for(size_t i = 0 ; (i < servers_sockets[server_socket].location.size()); i++) {
+			if (servers_sockets[server_socket].location[i].name == "/")
+			{
+				classLocation = &servers_sockets[server_socket].location[i];
+				pathToFile = servers_sockets[server_socket].location[i].path + uri;
+				cout << "hello" << endl;
+				break ;
+			}
+		}	
+	}
+	if(pathToFile.empty())
+	{
+		status = 404;
+		pathToFile = "./404Error.html";
+	}
+	cout << "path to file :: "<< pathToFile << endl;
+	
+
+	
 	//setting the uri in case of '/' at uri
-	if (uri == "/")
-		uri = "/" + servers_sockets[server_socket].location[0].default_file;
+	// if (uri == "/")
+	// 	uri = "/" + servers_sockets[server_socket].location[0].default_file;
 	
 	//setting file name with the path associated to it in the config file
-	filename = servers_sockets[server_socket].location[0].path  + uri;
+	// filename = servers_sockets[server_socket].location[0].path  + uri;
+	filename = pathToFile;
 	
-	// cout << "filename : ("<< filename<< ")"<< endl;
-	//TODO: remove the algo and set a default 404 page response
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
 	if(!file.is_open())
 	{
 		// cout << "here--------------->\n";
-		// status = 404;
-		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
+		status = 404;
+		filename = servers_sockets[server_socket].error_pages[0];
 		goto open_file;
 	}
 
@@ -181,7 +218,7 @@ void httpResponse::setData()
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: image/jpg; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".js"))
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/javascript; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
-	else if (endwith(filename, servers_sockets[server_socket].location[0].cgi_extension))
+	else if (endwith(filename, classLocation->cgi_extension))
 		execute_cgi();
 	else
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
@@ -220,7 +257,7 @@ void	httpResponse::execute_cgi() {
 	if(!file.is_open())
 	{
 		// status = 404;
-		filename = servers_sockets[server_socket].location[0].path + "/" + servers_sockets[server_socket].error_pages[0];
+		filename = servers_sockets[server_socket].error_pages[0];
 		file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 		if(!file.is_open()) {
 			cout << "Coudn't open the Error Page" << endl;
