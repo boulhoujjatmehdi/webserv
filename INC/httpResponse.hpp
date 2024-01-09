@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 16:54:17 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/09 11:07:28 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,5 +57,5 @@ public:
     void setData();
 	void execute_cgi();
     // void openFile();
-    void openTheAppropriateFile();
+    void openTheAppropriateFile(string& str);
 };

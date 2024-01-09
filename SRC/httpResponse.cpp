@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 17:54:46 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/09 12:07:20 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ std::map<int, string> status_message;
 
 void init_status_code() {
     status_message[200] = "OK";
+    status_message[301] = "Moved Permanently";
     status_message[400] = "Bad Request";
     status_message[401] = "Unauthorized";
     status_message[403] = "Forbidden";
@@ -26,7 +27,6 @@ void init_status_code() {
     status_message[413] = "Request Entity Too Large";
     status_message[414] = "Request-URI Too Long";
     status_message[500] = "Internal Server Error";
-	
 }
 
 
@@ -122,23 +122,28 @@ httpResponse::httpResponse(const httpRequest& obj):httpRequest(obj), header_sent
 {
 }
 
-void httpResponse::openTheAppropriateFile()
+void httpResponse::openTheAppropriateFile(string& str)
 {
 	string pathToFile;
 	classLocation = NULL;
 	// cout << "empty : " << location.size() << "    " << location << endl;
-	if(location.empty() && uri == "/")
-		location = "/";
+
+	location = '/' + location;
+
+	cout << "name   		:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
+	cout << "uri    		:("<< uri << ")"<< endl;
+	cout << "simple uri    	:("<< simple_uri << ")"<< endl;
+	cout << "location    	:("<< location << ")"<< endl;
 	for(size_t i = 0 ; (i < servers_sockets[server_socket].location.size()); i++)
 	{
-		// cout << servers_sockets[server_socket].location[i].name << " ********** "<<  this->location << endl;
-		if(servers_sockets[server_socket].location[i].name == this->location)
+		if((servers_sockets[server_socket].location[i].name == this->location))
 		{
 			classLocation = &servers_sockets[server_socket].location[i];
 			pathToFile = servers_sockets[server_socket].location[i].path;
 			pathToFile += (location == "/")? '/' + servers_sockets[server_socket].location[i].default_file: simple_uri;
-			// if (simple_uri == "/" || (location == "/" && simple_uri.empty()))
-			// 	pathToFile += classLocation->default_file;//TODO: tomorowland 
+			if (simple_uri == "/")
+				pathToFile += classLocation->default_file;
+			break;
 		}
 	}
 	if(pathToFile.empty())
@@ -151,7 +156,17 @@ void httpResponse::openTheAppropriateFile()
 				cout << "hello" << endl;
 				break ;
 			}
-		}	
+		}
+	}
+	
+	if(pathToFile.empty() && !endwith(uri, "/")) {
+		
+		if (access(uri.c_str(), F_OK) == -1) {
+			status = 301;
+			str = "Location: " +  uri + "/\r\n";
+			pathToFile = "./404Error.html";
+		}
+		
 	}
 	if(pathToFile.empty())
 	{
@@ -168,8 +183,8 @@ void httpResponse::openTheAppropriateFile()
 	
 	//setting file name with the path associated to it in the config file
 	// filename = servers_sockets[server_socket].location[0].path  + uri;
-	filename = pathToFile;
 	
+	filename = pathToFile;
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
@@ -193,8 +208,8 @@ void httpResponse::openTheAppropriateFile()
 
 void httpResponse::setData()
 {
-
-	openTheAppropriateFile();
+	string redirectLocation = "";
+	openTheAppropriateFile(redirectLocation);
 	
 	//setting the fileSize to a stream
 	std::ostringstream strm;
@@ -205,7 +220,7 @@ void httpResponse::setData()
 	tmp << status;
 	my_status = tmp.str();
 	if (endwith(filename, ".html"))
-		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\n"+redirectLocation+"Content-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".css"))
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/css; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".scss"))
