@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/08 10:49:34 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/08 17:13:22 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ extern fd_set theFdSetWrite[NBOFCLIENTS];
 
 httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
+	location  = obj.location;
+	simple_uri = obj.simple_uri;
 	socket = obj.socket;
 	content_length = obj.content_length;
 	server_socket = obj.server_socket;
@@ -135,6 +137,15 @@ void	httpRequest::parce_request() {
 	if (sp_pos != string::npos) {
 		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
 	}
+	// extract location from uri
+	
+	size_t pos = uri.find("/", 1);
+	if (pos != string::npos) {
+		location = uri.substr(1, pos - 1);
+		simple_uri = uri.substr(pos, uri.length());
+	}
+	// cout << "location is : |" << location << "|" << endl;
+	// cout << "simple_uri is : |" << simple_uri << "|" << endl;
 }
 
 void	httpRequest::extract_uri_data() {
@@ -174,6 +185,7 @@ void httpRequest::upload_files()
 	if (method == "POST")
 	{
 		size_t start = request.find("\r\n\r\n");
+		// cout << request.substr(0, start + 100)<< endl;
 		if (start == std::string::npos)
 			return;
 		string sup;
@@ -250,7 +262,7 @@ void	httpRequest::generate_response() {
 
 	try {
 		parce_request();
-		upload_files();
+		upload_files();//TODO: RETURN TO THROW
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
@@ -259,12 +271,12 @@ void	httpRequest::generate_response() {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
 		exit (10);
 	}
+	// cout << "uri is >> |" << uri  << "|" << endl;
+
 	// cout << first_line << endl;
 	// cout << "method is >> |" << method  << "|" << endl;
-	// cout << "uri is >> |" << uri  << "|" << endl;
 	// cout << "http_version is >> |" << http_version  << "|" << endl;
 	// cout << "hostname is >> |" << hostname  << "|" << endl;
 	// cout << "port is >> |" << port  << "|" << endl;
 	// cout << "connection is >> |" << connection  << "|" << endl;
-	// cout << "***********************************\n";
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/08 14:33:29 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/09 11:46:57 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,14 @@ char **envv;
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 {
 	int commSocket;
-	char buffer[151];
+	char buffer[BUFFER_SIZE + 1];
 	int size_readed;
 	string request;
 
 	commSocket = it->first;
-	bzero(buffer, 151);
-	size_readed = recv(commSocket, buffer, 150, 0);
+	bzero(buffer, BUFFER_SIZE + 1);
+	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
+	
 	// cout << "size readed: ("<< size_readed << ") ("<< buffer<< ")"<< endl;
 	// if(size_readed == -1)
 	// {
@@ -48,7 +49,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	if(size_readed <= 0)
 	{
 		
-		// cout << "socket connection ended"<< endl;
+		cout << "socket connection ended " << request << endl;
 		close(commSocket);
 		// fdMapRead.erase(commSocket);
 		deleteReadFd.push_back(commSocket);
@@ -56,6 +57,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	}
 	else 
 	{
+		// cout << buffer << endl;
 		it->second.request.append(buffer, size_readed);
 			request = it->second.request;
 		// cout << "("<< it->second.method <<")"<< endl;
@@ -284,11 +286,48 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	}
 }
 
+void createHtmlFile() {
+	std::ofstream file;
+	file.open("404Error.html");
+	if(!file.is_open())
+	{
+		std::cerr << "default pages failed to open"<< endl;
+		exit(12);
+	}
+
+	file << "<!DOCTYPE html>\n"
+		 << "<html>\n"
+		 << "<head>\n"
+		 << "<title>404 Not Found</title>\n"
+		 << "<style>\n"
+		 << "body {\n"
+		 << "    font-family: Arial, sans-serif;\n"
+		 << "    background-color: #f4f4f4;\n"
+		 << "    text-align: center;\n"
+		 << "}\n"
+		 << "h1 {\n"
+		 << "    color: #333;\n"
+		 << "}\n"
+		 << "p {\n"
+		 << "    color: #777;\n"
+		 << "}\n"
+		 << "</style>\n"
+		 << "</head>\n"
+		 << "<body>\n"
+		 << "<h1>404 Not Found</h1>\n"
+		 << "<p>The requested page could not be found.</p>\n"
+		 << "</body>\n"
+		 << "</html>\n";
+
+	file.close();
+}
+
 int main(int __unused ac, char __unused **av, char **env)
 {
 	envv = env;
 
 	parceConfFile cf;
+	createHtmlFile();
 	parce_conf_file(cf);
 	init_status_code();
 
