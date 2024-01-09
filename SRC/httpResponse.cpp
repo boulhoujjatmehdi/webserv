@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 12:35:03 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/09 15:58:27 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 extern std::map<int, Server> servers_sockets;
 extern char *envv;
 
-//STATUS CODE
+//STATUS_CODE
 std::map<int, string> status_message;
 
 void init_status_code() {
@@ -122,7 +122,27 @@ httpResponse::httpResponse(const httpRequest& obj):httpRequest(obj), header_sent
 {
 }
 
-void httpResponse::openTheAppropriateFile(string& str)
+void get_directory(const string& uri, string& rest, string& directory)
+{
+	string suri = uri;
+	// cout << "uri			:("<< uri << ")"<< endl;
+	directory = suri.substr(1);
+	size_t foundSlash;
+
+	if((foundSlash = directory.find("/")) != string::npos )
+	{
+		directory = suri.substr(0, foundSlash+1);
+		rest = suri.substr(foundSlash+1);
+	}
+	else
+		directory = suri;
+	
+	// cout << "rest			:("<< rest << ")"<< endl;
+	// cout << "directory		:("<< directory << ")"<< endl << endl;;
+}
+
+
+string httpResponse::fillThePathFile(string& redirection)
 {
 	string pathToFile;
 	classLocation = NULL;
@@ -130,51 +150,90 @@ void httpResponse::openTheAppropriateFile(string& str)
 
 	location = '/' + location;
 
-	cout << "name   		:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
-	cout << "uri    		:("<< uri << ")"<< endl;
-	cout << "simple uri    	:("<< simple_uri << ")"<< endl;
-	cout << "location    	:("<< location << ")"<< endl;
+	// string rest, directory;
+	
+	get_directory(uri, simple_uri, location);
+	cout << "uri 			:("<< uri << ")"<< endl;
+	cout << "name			:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
+	cout << "simple uri		:("<< simple_uri << ")"<< endl;
+	cout << "location		:("<< location << ")"<< endl ;
+
+
+	// redirection = "";
+	
+
+
+
 	for(size_t i = 0 ; (i < servers_sockets[server_socket].location.size()); i++)
 	{
-		if((servers_sockets[server_socket].location[i].name == this->location))
+		
+		if((servers_sockets[server_socket].location[i].name  == this->location))
 		{
 			classLocation = &servers_sockets[server_socket].location[i];
 			pathToFile = servers_sockets[server_socket].location[i].path;
 			pathToFile += (location == "/")? '/' + servers_sockets[server_socket].location[i].default_file: simple_uri;
-			if (simple_uri == "/")
-				pathToFile += classLocation->default_file;
+			if (simple_uri == "")
+			{
+				if (access(uri.c_str(), F_OK) == -1) {
+					status = 301;
+					redirection = "Location: " +  uri + "/\r\n";
+					pathToFile = "./404Error.html";
+					cout << "THIRD" << endl;
+					goto endd;
+				}
+			}
+			if(simple_uri == "/")
+				pathToFile += "/" + classLocation->default_file;
+				
+			cout << "FIRST" << endl;
 			break;
 		}
 	}
+
 	if(pathToFile.empty())
 	{
 		for(size_t i = 0 ; (i < servers_sockets[server_socket].location.size()); i++) {
 			if (servers_sockets[server_socket].location[i].name == "/")
 			{
 				classLocation = &servers_sockets[server_socket].location[i];
-				pathToFile = servers_sockets[server_socket].location[i].path + uri;
-				cout << "hello" << endl;
+				pathToFile = classLocation->path + uri;
+				if(location == "/")
+					pathToFile +=  "/" + classLocation->default_file;
+				cout << "SECOND" << endl;
 				break ;
 			}
 		}
 	}
 	
-	if(pathToFile.empty() && !endwith(uri, "/")) {
+	// if(pathToFile.empty() && !endwith(uri, "/")) {
 		
-		if (access(uri.c_str(), F_OK) == -1) {
-			status = 301;
-			str = "Location: " +  uri + "/\r\n";
-			pathToFile = "./404Error.html";
-		}
-		
-	}
+	// 	if (access(uri.c_str(), F_OK) == -1) {
+	// 		status = 301;
+	// 		redirection = "Location: " +  uri + "/\r\n";
+	// 		pathToFile = "./404Error.html";
+	// 		cout << "THIRD" << endl;
+	// 	}
+	// }
 	if(pathToFile.empty())
 	{
 		status = 404;
+		
 		pathToFile = "./404Error.html";
+		cout << "FOURTH" << endl;
 	}
-	cout << "path to file :: "<< pathToFile << endl;
-	
+	cout << "path to file :: "<< pathToFile << endl << endl;
+	endd:
+	return pathToFile;
+}
+
+
+
+void httpResponse::openTheAppropriateFile(string& redirection)
+{
+
+	string pathToFile;
+
+	pathToFile = fillThePathFile(redirection);
 
 	
 	//setting the uri in case of '/' at uri
