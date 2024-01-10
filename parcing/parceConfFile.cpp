@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/10 15:18:22 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:47:46 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,10 +242,14 @@ void parceConfFile::check_ifdata_isnot_empty() {
 			server[i].client_body_size == -1 || server[i].location.size() == 0)
 				throw(std::runtime_error("Syntax Error in ONE of the attributes"));
 		for (int j = 0; (size_t)j < server[i].location.size();j++) {
-			if (server[i].location[j].path.empty() || server[i].location[j].default_file.empty() || 
+			if (server[i].location[j].path.empty() || 
 			server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_bin.empty() || 
 			server[i].location[j].cgi_extension.empty())
 				throw(std::runtime_error("Syntax Error in ONE of the location attributes"));
+			// if (server[i].location[j].path.empty() || server[i].location[j].default_file.empty() || 
+			// server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_bin.empty() || 
+			// server[i].location[j].cgi_extension.empty())
+			// 	throw(std::runtime_error("Syntax Error in ONE of the location attributes"));
 				
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 20:05:58 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/10 17:47:32 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,15 @@ extern char *envv;
 std::map<int, string> status_message;
 
 void init_status_code() {
-    status_message[200] = "OK";
-    status_message[301] = "Moved Permanently";
-    status_message[400] = "Bad Request";
-    status_message[401] = "Unauthorized";
-    status_message[403] = "Forbidden";
-    status_message[404] = "Not Found";
-    status_message[413] = "Request Entity Too Large";
-    status_message[414] = "Request-URI Too Long";
-    status_message[500] = "Internal Server Error";
+	status_message[200] = "OK";
+	status_message[301] = "Moved Permanently";
+	status_message[400] = "Bad Request";
+	status_message[401] = "Unauthorized";
+	status_message[403] = "Forbidden";
+	status_message[404] = "Not Found";
+	status_message[413] = "Request Entity Too Large";
+	status_message[414] = "Request-URI Too Long";
+	status_message[500] = "Internal Server Error";
 }
 
 
@@ -142,6 +142,34 @@ void get_directory(const string& uri, string& rest, string& directory)
 }
 
 
+#include <dirent.h>
+#include <fstream>
+
+void listDirectoriesAsHtml(string path) {
+	DIR* dir = opendir(path.c_str());
+
+	if (dir == NULL) {
+		throw std::runtime_error("Could not open directory: " + path);
+	}
+	string name = "tmp.html";
+	std::ofstream my_file(name);
+	if (!my_file) {
+		throw std::runtime_error("Could not open file: " + name);
+	}
+
+	my_file << "<html>\n<head>\n<title>Directory Listing</title>\n</head>\n<body>\n<h1>Directory Listing</h1>\n<ul>\n";
+
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		my_file << "<li><a href=\"" << entry->d_name << "\">" << entry->d_name << "</a></li>\n";
+	}
+
+	my_file << "</ul>\n</body>\n</html>";
+
+	closedir(dir);
+}
+
+
 string httpResponse::fillThePathFile(string& redirection)
 {
 	string pathToFile;
@@ -161,8 +189,8 @@ string httpResponse::fillThePathFile(string& redirection)
 
 	// redirection = "";
 	
-
-
+	if (location == "/" && simple_uri.empty())
+		simple_uri = "/";
 
 	for(size_t i = 0 ; (i < servers_sockets[server_socket].location.size()); i++)
 	{
@@ -171,7 +199,7 @@ string httpResponse::fillThePathFile(string& redirection)
 		{
 			classLocation = &servers_sockets[server_socket].location[i];
 			pathToFile = servers_sockets[server_socket].location[i].path;
-			pathToFile += (location == "/")? '/' + servers_sockets[server_socket].location[i].default_file: simple_uri;
+			// pathToFile += (location == "/")? '/' + servers_sockets[server_socket].location[i].default_file: simple_uri;
 			if (simple_uri == "")
 			{
 				if (access(uri.c_str(), F_OK) == -1) {
@@ -182,8 +210,22 @@ string httpResponse::fillThePathFile(string& redirection)
 					goto endd;
 				}
 			}
-			if(simple_uri == "/")
-				pathToFile += "/" + classLocation->default_file;
+			if(simple_uri == "/") {
+				if (servers_sockets[server_socket].location[i].default_file.empty() && servers_sockets[server_socket].directory_listing == true) {
+					listDirectoriesAsHtml(servers_sockets[server_socket].location[i].path);
+					pathToFile = "./tmp.html";
+				}
+				else if (!classLocation->default_file.empty()) {
+					pathToFile += "/" + classLocation->default_file;
+				}
+				else 
+					goto error_404;
+			}
+			else {
+				pathToFile += simple_uri;
+				goto endd;
+			}
+
 				
 			cout << "FIRST" << endl;
 			break;
@@ -216,17 +258,32 @@ string httpResponse::fillThePathFile(string& redirection)
 	// }
 	if(pathToFile.empty())
 	{
+		error_404:
 		status = 404;
-		
 		pathToFile = "./404Error.html";
 		cout << "FOURTH" << endl;
 	}
-	cout << "path to file :: "<< pathToFile << endl << endl;
 	endd:
+	cout << "path to file :: "<< pathToFile << endl << endl;
 	return pathToFile;
 }
 
+#include <sys/stat.h>
 
+bool isDirectory(const std::string& path) {
+    struct stat info;
+
+    if (stat(path.c_str(), &info) != 0) {
+        // Error accessing the file/directory
+        return false;
+    } else if (info.st_mode & S_IFDIR) {
+        // The path is a directory
+        return true;
+    } else {
+        // The path is not a directory
+        return false;
+    }
+}
 
 void httpResponse::openTheAppropriateFile(string& redirection)
 {
@@ -246,12 +303,15 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 	filename = pathToFile;
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-
-	if(!file.is_open())
+	// cout << "isDirectory(filename)   :  "<< isDirectory(filename) << endl;
+	// cout << "filename   :  "<< filename << endl;
+	if(!file.is_open() || isDirectory(filename))
 	{
 		// cout << "here--------------->\n";
 		status = 404;
 		filename = servers_sockets[server_socket].error_pages[0];
+		if(file.is_open())
+			file.close();
 		goto open_file;
 	}
 

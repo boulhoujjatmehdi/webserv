@@ -7,3 +7,5 @@ default.conf
 .*
 upload
 YoupiBanane
+cgi_tester
+tester
