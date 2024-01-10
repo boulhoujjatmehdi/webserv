@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/08 14:25:42 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:16:13 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,10 @@ class Server {
 		string server_name;
 		vector<string> error_pages;
 		double client_body_size;
-		// string root;
 		vector<Location> location;
 		int location_nb;
+		// 
+		bool directory_listing;
 		
 		Server();
 		~Server();
