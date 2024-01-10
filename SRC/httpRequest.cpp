@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/08 17:13:22 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:03:37 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,7 +262,7 @@ void	httpRequest::generate_response() {
 
 	try {
 		parce_request();
-		upload_files();//TODO: RETURN TO THROW
+		upload_files();
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;

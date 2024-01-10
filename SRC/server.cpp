@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 11:46:57 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:06:22 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,7 +279,7 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 		// cout << "erase second : "<< commSocket << " == "<< it->second.connection <<  endl;
 		deleteWriteFd.push_back(commSocket);
 		return 0;
-	}//TODO: REFRESHING ERROR
+	}
 	else
 	{
 		return 1;
@@ -334,8 +334,7 @@ int main(int __unused ac, char __unused **av, char **env)
 	struct timeval timout;
 	timout.tv_sec = 5;
 	timout.tv_usec = 0;
-	int nbOfMasterSockets = connectSockets(cf);
-	(void)nbOfMasterSockets;
+	connectSockets(cf);
 	while (1)
 	{
 		debute:
@@ -358,7 +357,7 @@ int main(int __unused ac, char __unused **av, char **env)
 				deleteReadFd.push_back(it->first);
 			}
 			goto debute;
-		}//TODO: SHOULD CLOSE
+		}
 		
 		for(std::map<int, Server>::iterator it = servers_sockets.begin(); it != servers_sockets.end(); it++)
 		{

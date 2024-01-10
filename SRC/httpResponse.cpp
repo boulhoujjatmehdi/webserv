@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 15:58:27 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/09 20:09:07 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,9 +322,7 @@ void	httpResponse::execute_cgi() {
 		int status;
 		waitpid(pid, &status, 0);
 	}
-	close(filefd);
 	filename = "./cgi.html";
-		// goto open_file;
 
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 
