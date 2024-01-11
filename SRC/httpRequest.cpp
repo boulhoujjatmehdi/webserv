@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/10 15:03:37 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/11 15:17:29 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	httpRequest::checks_() {
 		
 	if (body_size > servers_sockets[this->server_socket].client_body_size) {
 		status = 413;
-		throw (std::runtime_error("error 10")); 
+		throw (std::runtime_error("Small Body Size"));
 	}
 	if (uri.length() > 2048) {
 		status = 414;
@@ -257,12 +257,25 @@ void httpRequest::upload_files()
 	}
 }
 
+void httpRequest::delete_files()
+{
+	if (method == "DELETE")
+	{
+		string tmp = uri.substr(1, uri.length());
+		if (remove(tmp.c_str()) == -1)
+			throw (std::runtime_error("not found ola kra"));
+		
+		cout << "file deleted (" << tmp << ")\n";
+	}
+}
+
 void	httpRequest::generate_response() {
 	// cout << request << endl;
 
 	try {
 		parce_request();
-		upload_files();
+		upload_files();//TODO: RETURN TO THROW
+		delete_files();
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;

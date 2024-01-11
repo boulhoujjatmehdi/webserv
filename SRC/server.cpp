@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/11 15:32:59 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/11 15:54:47 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 				if (pos != string::npos && it->second.content_length > servers_sockets[it->second.server_socket].client_body_size)
 				{
 					cout << "BODYSIZE EXEEDED!!!!!" << endl;
+					//TODO: what should i do in this case?
 				}
 				cout << "content lenght   : " << it->second.content_length << "\nserver body size : " << (servers_sockets[it->second.server_socket].client_body_size) << endl;;
 			}
