@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 20:09:07 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/11 13:07:00 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ httpResponse::~httpResponse()
 send a chunk of data 
 return: 0 if still sending the data
 return: 1 if the connection closed by peer
-return: 2 if the data is sent successfully and the connection is on keep alive mode
+return: 2 if the data is sent successfully
 */
 int httpResponse::sendChunk()
 {
@@ -153,10 +153,10 @@ string httpResponse::fillThePathFile(string& redirection)
 	// string rest, directory;
 	
 	get_directory(uri, simple_uri, location);
-	cout << "uri 			:("<< uri << ")"<< endl;
-	cout << "name			:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
-	cout << "simple uri		:("<< simple_uri << ")"<< endl;
-	cout << "location		:("<< location << ")"<< endl ;
+	// cout << "uri 			:("<< uri << ")"<< endl;
+	// cout << "name			:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
+	// cout << "simple uri		:("<< simple_uri << ")"<< endl;
+	// cout << "location		:("<< location << ")"<< endl ;
 
 
 	// redirection = "";
@@ -178,14 +178,14 @@ string httpResponse::fillThePathFile(string& redirection)
 					status = 301;
 					redirection = "Location: " +  uri + "/\r\n";
 					pathToFile = "./404Error.html";
-					cout << "THIRD" << endl;
+					// cout << "THIRD" << endl;
 					goto endd;
 				}
 			}
 			if(simple_uri == "/")
 				pathToFile += "/" + classLocation->default_file;
 				
-			cout << "FIRST" << endl;
+			// cout << "FIRST" << endl;
 			break;
 		}
 	}
@@ -199,7 +199,7 @@ string httpResponse::fillThePathFile(string& redirection)
 				pathToFile = classLocation->path + uri;
 				if(location == "/")
 					pathToFile +=  "/" + classLocation->default_file;
-				cout << "SECOND" << endl;
+				// cout << "SECOND" << endl;
 				break ;
 			}
 		}
@@ -219,9 +219,9 @@ string httpResponse::fillThePathFile(string& redirection)
 		status = 404;
 		
 		pathToFile = "./404Error.html";
-		cout << "FOURTH" << endl;
+		// cout << "FOURTH" << endl;
 	}
-	cout << "path to file :: "<< pathToFile << endl << endl;
+	// cout << "path to file :: "<< pathToFile << endl << endl;
 	endd:
 	return pathToFile;
 }

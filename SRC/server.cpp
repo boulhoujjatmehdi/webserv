@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/10 15:06:22 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/11 15:32:59 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,18 +34,6 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	bzero(buffer, BUFFER_SIZE + 1);
 	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
 	
-	// cout << "size readed: ("<< size_readed << ") ("<< buffer<< ")"<< endl;
-	// if(size_readed == -1)
-	// {
-	// 	cout << "errno " << errno << endl;
-	// 	cerr << "error at reading from socket" << commSocket << endl;
-	// 	for (std::map<int, httpRequest>::iterator it = fdMapRead.begin() ; it != fdMapRead.end(); it++)
-	// 	{
-	// 		cout << "::: " << it->first << endl;
-	// 	}
-	// 	exit(1);
-	// }
-	// else
 	if(size_readed <= 0)
 	{
 		
@@ -79,6 +67,11 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 					string st = request.substr(pos, request.find("\n", pos) - pos);
 					it->second.content_length = std::atoi(st.c_str());
 				}
+				if (pos != string::npos && it->second.content_length > servers_sockets[it->second.server_socket].client_body_size)
+				{
+					cout << "BODYSIZE EXEEDED!!!!!" << endl;
+				}
+				cout << "content lenght   : " << it->second.content_length << "\nserver body size : " << (servers_sockets[it->second.server_socket].client_body_size) << endl;;
 			}
 			if(it->second.content_length != -1 &&  (size_t)it->second.content_length ==  request.length() - (posofend + 4))
 			{
@@ -167,7 +160,7 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
     }
 }
 
-
+	
 int connectSockets(parceConfFile cf)
 {
 	int port;
@@ -213,7 +206,7 @@ int connectSockets(parceConfFile cf)
 			exit(1);
 		}
 
-		if(listen(sockfd, 10) == -1)
+		if(listen(sockfd, 1000) == -1)
 		{
 			cerr << "Failed to listen"<< endl;
 			exit(1);
@@ -236,53 +229,56 @@ void acceptNewConnections(int sockfd)
 		if(datasocket == -1)
 		{
 			cerr << "accept error" << endl;
-			exit(1);
+			//TODO
+			return ;
 		}
 		int optval =1 ;
 		if(setsockopt(datasocket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1)
 		{
 			cerr << "set Socket Options error"<<endl;
-			exit(1);
+			return ;
 		}
 		int flags = fcntl(datasocket, F_GETFL, 0);
 		if (flags == -1) {
 			cerr << "Can't get flags for socket" << endl;
-			exit(1);
+			return ;
 		}
 		flags |= O_NONBLOCK;
 		if (fcntl(datasocket, F_SETFL, flags) == -1) {
 			cerr << "Can't set socket to non-blocking mode" << endl;
-			exit(1);
+			return ;
 		}
 		fdMapRead.insert(std::make_pair(datasocket, httpRequest(datasocket, sockfd)));
-
-		
 }
 
 
-int writeOnSocket(std::map<int, httpResponse>::iterator& it)
+//This function sends the data in chunks by calling httpResponse::sendChunk()
+void writeOnSocket(std::map<int, httpResponse>::iterator& it)
 {
 	int commSocket, returnNumber;
 
 	commSocket = it->first;			
 	returnNumber = it->second.sendChunk();
-	if (returnNumber == 1)
+
+
+	if (returnNumber == 1)//if the socket is closed by peer or some error occured in send().
 	{
-		// cout <<"erase 1"<<endl;
 		close(commSocket);
 		deleteWriteFd.push_back(commSocket);
-		return 0;
 	}
-	else if(returnNumber == 2)
+	else if(returnNumber == 2)//all good in sendChunk().
 	{
-		fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, it->second.server_socket)));
-		// cout << "erase second : "<< commSocket << " == "<< it->second.connection <<  endl;
-		deleteWriteFd.push_back(commSocket);
-		return 0;
-	}
-	else
-	{
-		return 1;
+		if(it->second.connection == true)//if the connection is on keep-alive.
+		{
+			fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, it->second.server_socket)));
+			deleteWriteFd.push_back(commSocket);
+
+		}
+		else //if the connection is on close.
+		{
+			close(commSocket);
+			deleteWriteFd.push_back(commSocket);
+		}
 	}
 }
 
@@ -322,6 +318,23 @@ void createHtmlFile() {
 	file.close();
 }
 
+
+void clear_maps()
+{
+	for (std::__1::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
+	{
+		close(it->first);
+		deleteReadFd.push_back(it->first);
+	}
+	for (std::__1::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
+	{
+		close(it->first);
+		deleteWriteFd.push_back(it->first);
+	}
+}
+
+
+
 int main(int __unused ac, char __unused **av, char **env)
 {
 	envv = env;
@@ -344,7 +357,8 @@ int main(int __unused ac, char __unused **av, char **env)
 		if(ret == -1)
 		{
 			cout << "select failed!!"<< endl;
-			return 1;
+			clear_maps();
+			continue;
 		}
 		else if(ret == 0)
 		{

@@ -27,8 +27,8 @@ public:
 	string hostname;
 	string port;
 	bool connection;
-	int body_size;
-	int content_length;
+	double body_size;
+	double content_length;
 	int status;
 
     string location;
