@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/10 15:16:13 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/12 15:29:34 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ class Location {
 	string path;
 	string default_file;
 	vector<string> methods;
-	string cgi_bin;
+	// string cgi_bin;
 	string cgi_extension;
 		Location() {}
 		~Location() {}
@@ -38,7 +38,8 @@ class Location {
 class Server {
 	public:
 		vector<string> listen;
-		string server_name;
+		string host;
+		string root;
 		vector<string> error_pages;
 		double client_body_size;
 		vector<Location> location;

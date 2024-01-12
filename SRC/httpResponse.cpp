@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/11 15:14:33 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/12 16:47:47 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ void init_status_code() {
 	status_message[413] = "Request Entity Too Large";
 	status_message[414] = "Request-URI Too Long";
 	status_message[500] = "Internal Server Error";
+	status_message[501] = "Not Implemented";
 }
-
 
 httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 {
@@ -141,23 +141,15 @@ void get_directory(const string& uri, string& rest, string& directory)
 	// cout << "directory		:("<< directory << ")"<< endl << endl;
 }
 
-#include <dirent.h>
-#include <fstream>
-#include <sys/stat.h>
-
 bool isDirectory(const std::string& path) {
     struct stat info;
 
-    if (stat(path.c_str(), &info) != 0) {
-        // Error accessing the file/directory
+    if (stat(path.c_str(), &info) != 0)
         return false;
-    } else if (info.st_mode & S_IFDIR) {
-        // The path is a directory
+	else if (info.st_mode & S_IFDIR)
         return true;
-    } else {
-        // The path is not a directory
+	else
         return false;
-    }
 }
 
 void listDirectoriesAsHtml(string path) {
@@ -278,34 +270,26 @@ string httpResponse::fillThePathFile(string& redirection)
 		// cout << "FOURTH" << endl;
 	}
 	endd:
-	cout << "path to file :: "<< pathToFile << endl;
+	// cout << "path to file :: "<< pathToFile << endl;
 	return pathToFile;
 }
 
 
 void httpResponse::openTheAppropriateFile(string& redirection)
 {
-
 	string pathToFile;
 
-	pathToFile = fillThePathFile(redirection);
-
+	if (this->status == 200) {
+		pathToFile = fillThePathFile(redirection);
+		filename = pathToFile;
+	}
 	
-	//setting the uri in case of '/' at uri
-	// if (uri == "/")
-	// 	uri = "/" + servers_sockets[server_socket].location[0].default_file;
+	cout << "filename is : " << filename << " and status is : " << status << endl;
 	
-	//setting file name with the path associated to it in the config file
-	// filename = servers_sockets[server_socket].location[0].path  + uri;
-	
-	filename = pathToFile;
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-	// cout << "isDirectory(filename)   :  "<< isDirectory(filename) << endl;
-	// cout << "filename   :  "<< filename << endl;
 	if(!file.is_open() || isDirectory(filename))
 	{
-		// cout << "here--------------->\n";
 		status = 404;
 		filename = servers_sockets[server_socket].error_pages[0];
 		if(file.is_open())
@@ -371,8 +355,10 @@ void	httpResponse::execute_cgi() {
 		argv[0] = (char *)filename.c_str();
 		argv[1] = NULL;
 		if (execve(filename.c_str(), argv, NULL) == -1) {
-			std::cerr << "Error execve" << endl;
-			exit(1);
+			cerr << "-------\n";
+			status = 501;
+			filename = "./413.html";
+			exit (1);
 		}
 	} else if (pid < 0) {
 		cout << "Error fork" << endl;
@@ -380,28 +366,21 @@ void	httpResponse::execute_cgi() {
 		int status;
 		waitpid(pid, &status, 0);
 	}
+	// cout <<  "\\\\\\" << filename << endl;
 	filename = "./cgi.html";
-		// goto open_file;
-
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-
 	if(!file.is_open())
 	{
-		// status = 404;
 		filename = servers_sockets[server_socket].error_pages[0];
 		file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-		if(!file.is_open()) {
-			cout << "Coudn't open the Error Page" << endl;
-			exit (1);
-		}
+		if(!file.is_open())
+			throw (std::runtime_error("Coudn't open the Error Page"));
 	}
 
 	filePos = 0;
 	fileSize = file.tellg();
-	if (!file.good()) {
-		cout << "Coudn't open the Error Page" << endl;
-		exit (1);
-	}
+	if (!file.good())
+		throw (std::runtime_error("Coudn't open the Error Page"));
 	file.seekg(0);
 	
 	//setting the fileSize to a stream

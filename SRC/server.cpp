@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/11 14:38:36 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/12 14:51:59 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -324,69 +324,79 @@ void createHtmlFile() {
 
 int main(int __unused ac, char __unused **av, char **env)
 {
-	envv = env;
-
-	parceConfFile cf;
-	createHtmlFile();
-	parce_conf_file(cf);
-	init_status_code();
-
-	struct timeval timout;
-	timout.tv_sec = 5;
-	timout.tv_usec = 0;
-	int nbOfMasterSockets = connectSockets(cf);
-	(void)nbOfMasterSockets;
-	while (1)
-	{
-		debute:
-		refresh_fd_set(theFdSetRead, theFdSetWrite);
-		int ret = select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
-		// cout << "=============ret : " << ret << endl;
-		if(ret == -1)
+	try {
+		envv = env;
+	
+		parceConfFile cf;
+		createHtmlFile();
+		parce_conf_file(cf);
+		init_status_code();
+	
+		struct timeval timout;
+		timout.tv_sec = 5;
+		timout.tv_usec = 0;
+		int nbOfMasterSockets = connectSockets(cf);
+		(void)nbOfMasterSockets;
+		while (1)
 		{
-			cout << "select failed!!"<< endl;
-			return 1;
-		}
-		else if(ret == 0)
-		{
-			// cout << "timeout for all the "<< endl;
-			// int i = 0;
+			debute:
+			refresh_fd_set(theFdSetRead, theFdSetWrite);
+			int ret = select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
+			// cout << "=============ret : " << ret << endl;
+			if(ret == -1)
+			{
+				cout << "select failed!!"<< endl;
+				return 1;
+			}
+			else if(ret == 0)
+			{
+				// cout << "timeout for all the "<< endl;
+				// int i = 0;
+				for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
+				{
+					// cout << "timeout for : "<< it->first << endl;
+					close(it->first);
+					deleteReadFd.push_back(it->first);
+				}
+				goto debute;
+			}//TODO: SHOULD CLOSE
+			
+			for(std::map<int, Server>::iterator it = servers_sockets.begin(); it != servers_sockets.end(); it++)
+			{
+				if(FD_ISSET(it->first, theFdSetRead))
+				{
+					// cout << "connect" << endl;
+					acceptNewConnections(it->first);
+					// ret--;
+				}
+			}
 			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 			{
-				// cout << "timeout for : "<< it->first << endl;
-				close(it->first);
-				deleteReadFd.push_back(it->first);
+				if(FD_ISSET(it->first, theFdSetRead))
+				{
+					// cout << "read "<< it->first << endl;
+					readTheRequest(it);
+				}
 			}
-			goto debute;
-		}//TODO: SHOULD CLOSE
-		
-		for(std::map<int, Server>::iterator it = servers_sockets.begin(); it != servers_sockets.end(); it++)
-		{
-			if(FD_ISSET(it->first, theFdSetRead))
+			
+			for (std::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
 			{
-				// cout << "connect" << endl;
-				acceptNewConnections(it->first);
-
+				if(FD_ISSET(it->first, theFdSetWrite))
+				{
+					// cout << "write " << it->first << endl;
+					writeOnSocket(it);
+				}
 			}
 		}
-		for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
-		{
-			if(FD_ISSET(it->first, theFdSetRead))
-			{
-				// cout << "read "<< it->first << endl;
-				readTheRequest(it);
-			}
-		}
-		
-		for (std::map<int, httpResponse>::iterator it = fdMapWrite.begin(); it != fdMapWrite.end(); it++)
-		{
-			if(FD_ISSET(it->first, theFdSetWrite))
-			{
-				// cout << "write " << it->first << endl;
-				writeOnSocket(it);
-			}
-		}
+	
+		return 0;
 	}
-
-	return 0;
+	catch (std::exception &e) {
+		cout << e.what() << endl;
+		return 1;
+	}
+	catch (...) {
+		cout << "Error" << endl;
+		return 1;
+	}
 }

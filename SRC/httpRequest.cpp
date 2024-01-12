@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/11 15:17:29 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/12 16:20:21 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	port = obj.port;
 	connection = obj.connection;
 	status = obj.status;
+	filename = obj.filename;
 	return *this;
 }
 
@@ -41,18 +42,16 @@ void	httpRequest::checks_() {
 	size_t start = request.find("\r\n\r\n");
 	start += 4;
 	body_size = request.size() - start;
-	// cout << "body size is : " << body_size << " cf bs is : " << servers_sockets[this->server_socket].client_body_size << endl;
-	// cout << "URI L ::: " << uri.length() << endl;
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw (std::runtime_error("error 9"));
 		
 	if (body_size > servers_sockets[this->server_socket].client_body_size) {
 		status = 413;
-		throw (std::runtime_error("Small Body Size"));
+		filename = "./413.html";
 	}
 	if (uri.length() > 2048) {
 		status = 414;
-		throw (std::runtime_error("error 11"));
+		filename = "./413.html";
 	}
 }
 
@@ -60,7 +59,7 @@ void	httpRequest::extract_form_data() {
 	
 	size_t start = request.find("\r\n\r\n");
 	if (start == string::npos)
-		exit (1);
+		throw (std::runtime_error("find failed"));
 	start += 4;
 	string data = request.substr(start, request.length());
 	size_t pos = 0;
@@ -73,11 +72,6 @@ void	httpRequest::extract_form_data() {
 		pos_2 = data.find("&", pos_1);
 		if (pos_2 == string::npos)
 			pos_2 = data.length();
-		// cout << "pos : " << pos << endl;
-		// cout << "pos_1 : " << pos_1 << endl;
-		// cout << "pos_2 : " << pos_2 << endl<< endl;
-		// cout << "|" << data.substr(pos, pos_1 - pos) <<"|"<< endl;
-		// cout << "|" << data.substr(pos_1 + 1, pos_2 - pos_1 - 1) << "|" << endl;
 		form_data[data.substr(pos, pos_1 - pos)] = data.substr(pos_1 + 1, pos_2 - pos_1 - 1);
 		pos = pos_2 + 1;
 		if (pos >= data.length())
@@ -99,10 +93,10 @@ void	httpRequest::parce_request() {
 	{
 		size_t pos_1 = request.find(" ");
 		if (pos_1 == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
 		size_t pos_2 = request.find(" ", pos_1 + 1);
 		if (pos_2 == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
 		method = request.substr(0, pos_1);
 		uri = request.substr(pos_1 + 1, pos_2 - pos_1 - 1);
 		http_version = request.substr(pos_2 + 1, request.find("\n") - pos_2 - 2);
@@ -110,22 +104,22 @@ void	httpRequest::parce_request() {
 	{
 		size_t pos_1 = request.find("Host");
 		if (pos_1 == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
 		pos_1 += 6;
 		size_t pos_2 = request.find(":", pos_1);
 		if (pos_2 == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
 		hostname = request.substr(pos_1, pos_2 - pos_1);
 		port = request.substr(pos_2 + 1, request.find("\r", pos_2) - pos_2 - 1);
 	}
 	{
 		size_t pos_1 = request.find("Connection");
 		if (pos_1 == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
 		pos_1 += 12;
 		size_t pos_2 = request.find("\r", pos_1);
 		if (pos_2 == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
 
 		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
 			connection = true;
@@ -138,14 +132,11 @@ void	httpRequest::parce_request() {
 		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
 	}
 	// extract location from uri
-	
 	size_t pos = uri.find("/", 1);
 	if (pos != string::npos) {
 		location = uri.substr(1, pos - 1);
 		simple_uri = uri.substr(pos, uri.length());
 	}
-	// cout << "location is : |" << location << "|" << endl;
-	// cout << "simple_uri is : |" << simple_uri << "|" << endl;
 }
 
 void	httpRequest::extract_uri_data() {
@@ -153,7 +144,8 @@ void	httpRequest::extract_uri_data() {
 	if (uri.find("?") != string::npos) {
 		size_t start = uri.find("?");
 		if (start == string::npos)
-			exit (1);
+			throw (std::runtime_error("find failed"));
+		uri = uri.substr(0, start);
 		start += 1;
 		string data = uri.substr(start, uri.length());
 		size_t pos = 0;
@@ -172,7 +164,6 @@ void	httpRequest::extract_uri_data() {
 				break ;
 		}
 		
-		uri = uri.substr(0, uri.find("?"));
 		// cout << method <<" DATA : ";
 		// for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
 		// 	cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
@@ -282,6 +273,7 @@ void	httpRequest::generate_response() {
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
+		// just to see if something unexpected happens :: should be removed 
 		exit (10);
 	}
 	// cout << "uri is >> |" << uri  << "|" << endl;

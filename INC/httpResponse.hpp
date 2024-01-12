@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 19:48:20 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/12 15:49:56 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class httpResponse: public httpRequest
 {
 public:
     std::ifstream file;
-    string filename;
+    // string filename;
     string header;
     size_t header_sent;
     char buffer[BUFFER_SIZE];
