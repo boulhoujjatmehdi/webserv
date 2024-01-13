@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 15:06:47 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/13 15:25:49 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,12 @@ void init_status_code() {
 	status_message[401] = "Unauthorized";
 	status_message[403] = "Forbidden";
 	status_message[404] = "Not Found";
+	status_message[408] = "Request Timeout";
 	status_message[413] = "Request Entity Too Large";
 	status_message[414] = "Request-URI Too Long";
 	status_message[500] = "Internal Server Error";
+	status_message[501] = "Not Implemented";
 }
-
 
 httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
 {
@@ -72,7 +73,7 @@ return: 0 if still sending the data
 return: 1 if the connection closed by peer
 return: 2 if the data is sent successfully
 */
-	
+
 int httpResponse::sendChunk()
 {
 	std::istringstream strm(request);
@@ -99,7 +100,7 @@ int httpResponse::sendChunk()
 			return 1;
 		}
 		if(sentData < readedData)
-				file.seekg(sentData - readedData, std::ios_base::cur);
+			file.seekg(sentData - readedData, std::ios_base::cur);
 		return 0;
 	}
 	else
@@ -141,23 +142,15 @@ void get_directory(const string& uri, string& rest, string& directory)
 	// cout << "directory		:("<< directory << ")"<< endl << endl;
 }
 
-#include <dirent.h>
-#include <fstream>
-#include <sys/stat.h>
-
 bool isDirectory(const std::string& path) {
     struct stat info;
 
-    if (stat(path.c_str(), &info) != 0) {
-        // Error accessing the file/directory
+    if (stat(path.c_str(), &info) != 0)
         return false;
-    } else if (info.st_mode & S_IFDIR) {
-        // The path is a directory
+	else if (info.st_mode & S_IFDIR)
         return true;
-    } else {
-        // The path is not a directory
+	else
         return false;
-    }
 }
 
 void listDirectoriesAsHtml(string path) {
@@ -278,33 +271,26 @@ string httpResponse::fillThePathFile(string& redirection)
 		// cout << "FOURTH" << endl;
 	}
 	endd:
-		return pathToFile;
+	// cout << "path to file :: "<< pathToFile << endl;
+	return pathToFile;
 }
 
 
 void httpResponse::openTheAppropriateFile(string& redirection)
 {
-
 	string pathToFile;
 
-	pathToFile = fillThePathFile(redirection);
-
-
-	//setting the uri in case of '/' at uri
-	// if (uri == "/")
-	// 	uri = "/" + servers_sockets[server_socket].location[0].default_file;
+	if (this->status == 200) {
+		pathToFile = fillThePathFile(redirection);
+		filename = pathToFile;
+	}
 	
-	//setting file name with the path associated to it in the config file
-	// filename = servers_sockets[server_socket].location[0].path  + uri;
+	cout << "filename is : " << filename << " and status is : " << status << endl;
 	
-			filename = pathToFile;
-		open_file:
+	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-	// cout << "isDirectory(filename)   :  "<< isDirectory(filename) << endl;
-	// cout << "filename   :  "<< filename << endl;
 	if(!file.is_open() || isDirectory(filename))
 	{
-		// cout << "here--------------->\n";
 		status = 404;
 		filename = servers_sockets[server_socket].error_pages[0];
 		if(file.is_open())
@@ -336,7 +322,7 @@ void httpResponse::setData()
 	tmp << status;
 	my_status = tmp.str();
 	if (endwith(filename, ".html"))
-		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\n"+redirectLocation+"Connection: close\r\n" "Content-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\n"+redirectLocation+"Content-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".css"))
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/css; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".scss"))
@@ -354,14 +340,14 @@ void httpResponse::setData()
 	else
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 }
-
+#include "signal.h"//TODO: MINOR
 void	httpResponse::execute_cgi() {
 	
 	if(file.is_open())
 		file.close();
 	cout << "CGI IS DETECTED\n";
 	int filefd = 0;
-	pid_t pid = fork();
+	int pid = fork();
 	if (pid == 0) {
 		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		dup2(filefd, 1);
@@ -370,36 +356,52 @@ void	httpResponse::execute_cgi() {
 		argv[0] = (char *)filename.c_str();
 		argv[1] = NULL;
 		if (execve(filename.c_str(), argv, NULL) == -1) {
-			std::cerr << "Error execve" << endl;
-			exit(1);
+			kill(getpid(), SIGKILL);
 		}
 	} else if (pid < 0) {
 		cout << "Error fork" << endl;
 	} else {
-		int status;
-		waitpid(pid, &status, 0);
+		int monitor_process_id = fork();
+		if (monitor_process_id == 0) {
+			sleep(5);
+			// cout << "---------------()---------------\n";
+			kill(pid, SIGTERM);
+			kill(getpid(), SIGKILL);
+		}
+		else if (monitor_process_id < 0)
+			cout << "Error fork" << endl;
+		else {
+			int status;
+			waitpid(pid, &status, 0);
+			kill(monitor_process_id, SIGKILL);
+			if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL)) {
+				// cout << "---------------501 error---------------\n";
+				this->status = 501;
+				filename = "./501.html";
+			}
+			else if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM)) {
+				// cout << "---------------408 error---------------\n";
+				this->status = 408;
+				filename = "./408.html";
+			}
+			else
+				filename = "./cgi.html";
+		}
 	}
-	filename = "./cgi.html";
-		
+	cout << "CGI filename is : " << filename << " and status is : " << status << endl;
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-
 	if(!file.is_open())
 	{
-		// status = 404;
 		filename = servers_sockets[server_socket].error_pages[0];
 		file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
-		if(!file.is_open()) {
-			cout << "Coudn't open the Error Page" << endl;
-			exit (1);
-		}
+		if(!file.is_open())
+			throw (std::runtime_error("Coudn't open the Error Page"));
 	}
 
 	filePos = 0;
 	fileSize = file.tellg();
-	if (!file.good()) {
-		cout << "Coudn't open the Error Page" << endl;
-		exit (1);
-	}
+	if (!file.good())
+		throw (std::runtime_error("Coudn't open the Error Page"));
 	file.seekg(0);
 	
 	//setting the fileSize to a stream
