@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/12 15:36:11 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/13 12:39:53 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,13 @@ void parceConfFile::fill_data() {
 					if (str >> token)
 						throw(std::runtime_error("Syntax Error 100"));
 				}
+				else if (token == "server_name" && (str >> token)) {
+					serv.server_name = token;
+					if (!(str >> token) || (token != ";"))
+						throw(std::runtime_error("Syntax Error ';'2"));
+					if (str >> token)
+						throw(std::runtime_error("Syntax Error 100"));
+				}
 				else if ((token == "location") && (str >> token)) {
 					string location_name = token;
 					if (!(str >> token) || (token != "{"))
@@ -288,6 +295,7 @@ Server::Server(const Server& obj)
 {
 	listen = obj.listen;
 	host = obj.host;
+	server_name = obj.server_name;
 	root = obj.root;
 	error_pages = obj.error_pages;
 	client_body_size = obj.client_body_size;
@@ -300,6 +308,7 @@ Server& Server::operator=(const Server& obj)
 {
 	listen = obj.listen;
 	host = obj.host;
+	server_name = obj.server_name;
 	root = obj.root;
 	error_pages = obj.error_pages;
 	client_body_size = obj.client_body_size;

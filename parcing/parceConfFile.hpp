@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/12 15:29:34 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/13 12:38:00 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class Server {
 	public:
 		vector<string> listen;
 		string host;
+		string server_name;
 		string root;
 		vector<string> error_pages;
 		double client_body_size;

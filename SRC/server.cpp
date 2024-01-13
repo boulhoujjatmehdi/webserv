@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/12 14:51:59 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/13 14:22:20 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,6 +275,7 @@ int writeOnSocket(std::map<int, httpResponse>::iterator& it)
 	}
 	else if(returnNumber == 2)
 	{
+		// cout << "full response sent."<< endl;
 		fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, it->second.server_socket)));
 		// cout << "erase second : "<< commSocket << " == "<< it->second.connection <<  endl;
 		deleteWriteFd.push_back(commSocket);
@@ -333,7 +334,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		init_status_code();
 	
 		struct timeval timout;
-		timout.tv_sec = 5;
+		timout.tv_sec = 60;
 		timout.tv_usec = 0;
 		int nbOfMasterSockets = connectSockets(cf);
 		(void)nbOfMasterSockets;

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/12 16:47:47 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/13 14:23:27 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ void init_status_code() {
 	status_message[401] = "Unauthorized";
 	status_message[403] = "Forbidden";
 	status_message[404] = "Not Found";
+	status_message[408] = "Request Timeout";
 	status_message[413] = "Request Entity Too Large";
 	status_message[414] = "Request-URI Too Long";
 	status_message[500] = "Internal Server Error";
@@ -339,14 +340,14 @@ void httpResponse::setData()
 	else
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 }
-
+#include "signal.h"
 void	httpResponse::execute_cgi() {
 	
 	if(file.is_open())
 		file.close();
 	cout << "CGI IS DETECTED\n";
 	int filefd = 0;
-	pid_t pid = fork();
+	int pid = fork();
 	if (pid == 0) {
 		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		dup2(filefd, 1);
@@ -355,19 +356,39 @@ void	httpResponse::execute_cgi() {
 		argv[0] = (char *)filename.c_str();
 		argv[1] = NULL;
 		if (execve(filename.c_str(), argv, NULL) == -1) {
-			cerr << "-------\n";
-			status = 501;
-			filename = "./413.html";
-			exit (1);
+			kill(getpid(), SIGKILL);
 		}
 	} else if (pid < 0) {
 		cout << "Error fork" << endl;
 	} else {
-		int status;
-		waitpid(pid, &status, 0);
+		int monitor_process_id = fork();
+		if (monitor_process_id == 0) {
+			sleep(5);
+			// cout << "---------------()---------------\n";
+			kill(pid, SIGTERM);
+			kill(getpid(), SIGKILL);
+		}
+		else if (monitor_process_id < 0)
+			cout << "Error fork" << endl;
+		else {
+			int status;
+			waitpid(pid, &status, 0);
+			kill(monitor_process_id, SIGKILL);
+			if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL)) {
+				// cout << "---------------501 error---------------\n";
+				this->status = 501;
+				filename = "./501.html";
+			}
+			else if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM)) {
+				// cout << "---------------408 error---------------\n";
+				this->status = 408;
+				filename = "./408.html";
+			}
+			else
+				filename = "./cgi.html";
+		}
 	}
-	// cout <<  "\\\\\\" << filename << endl;
-	filename = "./cgi.html";
+	cout << "CGI filename is : " << filename << " and status is : " << status << endl;
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 	if(!file.is_open())
 	{
