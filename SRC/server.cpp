@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 15:44:17 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/13 15:48:05 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,7 +215,7 @@ void acceptNewConnections(int sockfd)
 			
 			return ;
 		}
-struct linger linger_opt = {0, 0}; // Linger active, timeout 0
+struct linger linger_opt = {1, 0}; // Linger active, timeout 0
 		setsockopt(datasocket, SOL_SOCKET, SO_LINGER, &linger_opt, sizeof(linger_opt));
 
 		int optval =1 ;
