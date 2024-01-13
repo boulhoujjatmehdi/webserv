@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/10 15:18:22 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/13 12:39:53 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,13 +82,6 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 			if (str >> token)
 				throw(std::runtime_error("Syntax Error 100"));
 		}
-		else if (token == "cgi_bin" && (str >> token)) {
-			local.cgi_bin = token;
-			if (!(str >> token) || (token != ";"))
-				throw(std::runtime_error("Syntax Error ';'3"));
-			if (str >> token)
-				throw(std::runtime_error("Syntax Error 100"));
-		}
 		else if (token == "cgi_extension" && (str >> token)) {
 			local.cgi_extension = token;
 			if (!(str >> token) || (token != ";"))
@@ -139,8 +132,8 @@ void parceConfFile::fill_data() {
 					if (str >> token)
 						throw(std::runtime_error("Syntax Error 100"));
 				}
-				else if (token == "server_name" && (str >> token)) {
-					serv.server_name = token;
+				else if (token == "host" && (str >> token)) {
+					serv.host = token;
 					if (!(str >> token) || (token != ";"))
 						throw(std::runtime_error("Syntax Error ';'2"));
 					if (str >> token)
@@ -179,6 +172,20 @@ void parceConfFile::fill_data() {
 					if (str >> token)
 						throw(std::runtime_error("Syntax Error 100"));
 				}
+				else if (token == "root" && (str >> token)) {
+					serv.root = token;
+					if (!(str >> token) || (token != ";"))
+						throw(std::runtime_error("Syntax Error ';'2"));
+					if (str >> token)
+						throw(std::runtime_error("Syntax Error 100"));
+				}
+				else if (token == "server_name" && (str >> token)) {
+					serv.server_name = token;
+					if (!(str >> token) || (token != ";"))
+						throw(std::runtime_error("Syntax Error ';'2"));
+					if (str >> token)
+						throw(std::runtime_error("Syntax Error 100"));
+				}
 				else if ((token == "location") && (str >> token)) {
 					string location_name = token;
 					if (!(str >> token) || (token != "{"))
@@ -207,7 +214,7 @@ void parceConfFile::print_data() {
 		for (size_t k = 0;k < server[i].listen.size() ;k++)
 			 cout << server[i].listen[k] << ", ";
 		cout << endl;
-		cout << "server_name : " << server[i].server_name << endl;
+		cout << "host : " << server[i].host << endl;
 		cout << "client_body_size : " << server[i].client_body_size << endl;
 		cout << "error_pages : ";
 		vector<string>::iterator it = server[i].error_pages.begin();
@@ -225,7 +232,6 @@ void parceConfFile::print_data() {
 			for (;it != server[i].location[j].methods.end();it++)
 				cout << *it << ", ";
 			cout << endl;
-			cout << "\tcgi_bin : " << server[i].location[j].cgi_bin  << endl;
 			cout << "\tcgi_extension : " << server[i].location[j].cgi_extension  << endl;
 		}
 	}
@@ -238,15 +244,14 @@ void parceConfFile::check_ifdata_isnot_empty() {
 		throw(std::runtime_error("No Server Available"));
 	for (int i = 0;i < server_nb; i++) {
 	
-		if (server[i].listen.size() == 0 || server[i].server_name.empty() || server[i].error_pages.size() == 0 || 
-			server[i].client_body_size == -1 || server[i].location.size() == 0)
+		if (server[i].listen.size() == 0 || server[i].host.empty() || server[i].error_pages.size() == 0 || 
+			server[i].client_body_size == -1 || server[i].location.size() == 0 || server[i].root.empty())
 				throw(std::runtime_error("Syntax Error in ONE of the attributes"));
 		for (int j = 0; (size_t)j < server[i].location.size();j++) {
-			if (server[i].location[j].path.empty() || server[i].location[j].default_file.empty() || 
-			server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_bin.empty() || 
+			if (server[i].location[j].path.empty() || 
+			server[i].location[j].methods.size() == 0 || 
 			server[i].location[j].cgi_extension.empty())
-				throw(std::runtime_error("Syntax Error in ONE of the location attributes"));
-				
+				throw(std::runtime_error("Syntax Error in ONE of the location attributes"));				
 		}
 	}
 }
@@ -289,7 +294,9 @@ void parceConfFile::check_ifdata_is_valid() {
 Server::Server(const Server& obj)
 {
 	listen = obj.listen;
+	host = obj.host;
 	server_name = obj.server_name;
+	root = obj.root;
 	error_pages = obj.error_pages;
 	client_body_size = obj.client_body_size;
 	location = obj.location;
@@ -300,7 +307,9 @@ Server::Server(const Server& obj)
 Server& Server::operator=(const Server& obj)
 {
 	listen = obj.listen;
+	host = obj.host;
 	server_name = obj.server_name;
+	root = obj.root;
 	error_pages = obj.error_pages;
 	client_body_size = obj.client_body_size;
 	location = obj.location;

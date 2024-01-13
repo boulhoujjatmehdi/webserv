@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 15:48:05 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/13 15:57:36 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -343,11 +343,8 @@ int main(int __unused ac, char __unused **av, char **env)
 				while (1)
 		{
 			refresh_fd_set(theFdSetRead, theFdSetWrite);
-			cout << "max = " << getMaxFd() << endl;
 		
-			cout << "=============" << endl;
 			int ret = select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
-			cout << "=============ret : " << ret << endl;
 			if(ret == -1)
 			{
 				cout << "select failed!!"<< endl;
@@ -371,7 +368,7 @@ int main(int __unused ac, char __unused **av, char **env)
 			{
 				if(FD_ISSET(it->first, theFdSetRead))
 				{
-					cout << "connect" << endl;
+					// cout << "connect" << endl;
 					acceptNewConnections(it->first);
 				}
 			}
@@ -379,7 +376,7 @@ int main(int __unused ac, char __unused **av, char **env)
 			{
 				if(FD_ISSET(it->first, theFdSetRead))
 				{
-					cout << "read "<< it->first << endl;
+					// cout << "read "<< it->first << endl;
 					readTheRequest(it);
 				}
 			}
@@ -388,7 +385,7 @@ int main(int __unused ac, char __unused **av, char **env)
 			{
 				if(FD_ISSET(it->first, theFdSetWrite))
 				{
-					cout << "write " << it->first << endl;
+					// cout << "write " << it->first << endl;
 					writeOnSocket(it);
 				}
 			}
