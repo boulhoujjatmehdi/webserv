@@ -13,7 +13,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 500
 
 class httpRequest
 {
@@ -34,6 +34,8 @@ public:
     string location;
     string simple_uri;
 
+    string filename;
+    
 	std::map<string, string> form_data;
 
     const int& getSocket() const

@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/11 15:46:30 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/13 13:48:53 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,14 +71,18 @@ send a chunk of data
 return: 0 if still sending the data
 return: 1 if the connection closed by peer
 return: 2 if the data is sent successfully
-*/
+*/		file.seekg(sentData - readedData, std::ios_base::cur);
+		return 0;
+	}
+	else
+	{
+	
 int httpResponse::sendChunk()
 {
 	std::istringstream strm(request);
 	string str;
 	strm >> str;
 	int sent_size, sentData;
-
 	//sending header in one chunk 
 	if(header_sent < header.size())
 	{
@@ -99,11 +103,6 @@ int httpResponse::sendChunk()
 			return 1;
 		}
 		if(sentData < readedData)
-			file.seekg(sentData - readedData, std::ios_base::cur);
-		return 0;
-	}
-	else
-	{
 		//all the data has been sent
 		return 2;
 	}
@@ -289,7 +288,7 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 
 	pathToFile = fillThePathFile(redirection);
 
-	
+
 	//setting the uri in case of '/' at uri
 	// if (uri == "/")
 	// 	uri = "/" + servers_sockets[server_socket].location[0].default_file;
@@ -297,8 +296,8 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 	//setting file name with the path associated to it in the config file
 	// filename = servers_sockets[server_socket].location[0].path  + uri;
 	
-	filename = pathToFile;
-	open_file:
+			filename = pathToFile;
+		open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);
 	// cout << "isDirectory(filename)   :  "<< isDirectory(filename) << endl;
 	// cout << "filename   :  "<< filename << endl;
@@ -336,7 +335,7 @@ void httpResponse::setData()
 	tmp << status;
 	my_status = tmp.str();
 	if (endwith(filename, ".html"))
-		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\n"+redirectLocation+"Content-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
+		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\n"+redirectLocation+"Connection: close\r\n" "Content-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".css"))
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/css; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 	else if (endwith(filename, ".scss"))

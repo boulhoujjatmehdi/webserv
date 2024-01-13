@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/11 15:17:29 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/12 14:30:00 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	port = obj.port;
 	connection = obj.connection;
 	status = obj.status;
+	filename = obj.filename;
 	return *this;
 }
 
@@ -48,6 +49,7 @@ void	httpRequest::checks_() {
 		
 	if (body_size > servers_sockets[this->server_socket].client_body_size) {
 		status = 413;
+		filename = "./413Error.html";
 		throw (std::runtime_error("Small Body Size"));
 	}
 	if (uri.length() > 2048) {

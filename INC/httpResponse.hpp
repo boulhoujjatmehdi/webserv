@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/09 14:07:55 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/12 14:27:18 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class httpResponse: public httpRequest
 {
 public:
     std::ifstream file;
-    string filename;
+    // string filename;
     string header;
     size_t header_sent;
     char buffer[BUFFER_SIZE];

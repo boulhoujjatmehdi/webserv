@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/11 15:54:47 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/13 13:15:53 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ fd_set theFdSetWrite[NBOFCLIENTS];
 
 char **envv;
 
+extern std::map<int, string> status_message;
 
 int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 {
@@ -32,11 +33,11 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 
 	commSocket = it->first;
 	bzero(buffer, BUFFER_SIZE + 1);
-	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);
-	
+	cout << "recieving " << endl;
+	size_readed = recv(commSocket, buffer, BUFFER_SIZE, 0);//reading from the socket
+	cout << "recv : "<< size_readed << endl;
 	if(size_readed <= 0)
 	{
-		
 		cout << "socket connection ended " << request << endl;
 		close(commSocket);
 		// fdMapRead.erase(commSocket);
@@ -45,9 +46,9 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 	}
 	else 
 	{
-		// cout << buffer << endl;
+
 		it->second.request.append(buffer, size_readed);
-			request = it->second.request;
+		request = it->second.request;//TODO: MAKE THIS REQUEST REFERENCE TO ESCAPE THE LATENCY OF COPPYING A LOT OF DATA
 		// cout << "("<< it->second.method <<")"<< endl;
 		if(it->second.method.empty())
 		{
@@ -67,12 +68,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 					string st = request.substr(pos, request.find("\n", pos) - pos);
 					it->second.content_length = std::atoi(st.c_str());
 				}
-				if (pos != string::npos && it->second.content_length > servers_sockets[it->second.server_socket].client_body_size)
-				{
-					cout << "BODYSIZE EXEEDED!!!!!" << endl;
-					//TODO: what should i do in this case?
-				}
-				cout << "content lenght   : " << it->second.content_length << "\nserver body size : " << (servers_sockets[it->second.server_socket].client_body_size) << endl;;
+
 			}
 			if(it->second.content_length != -1 &&  (size_t)it->second.content_length ==  request.length() - (posofend + 4))
 			{
@@ -87,7 +83,7 @@ int  readTheRequest(std::map<int, httpRequest>::iterator& it)
 		}
 		if(request.size() > 4  && request.substr(request.size() - 4) == "\r\n\r\n")
 		{
-			// cout << "full request received with GET method"<<endl;
+			// cout << request << endl;
 			it->second.generate_response();
 			fdMapWrite.insert(std::make_pair(commSocket, httpResponse(it->second)));
 			fdMapWrite[commSocket].setData();
@@ -189,17 +185,19 @@ int connectSockets(parceConfFile cf)
 		}
 
 		// Set the socket to non-blocking mode
-		int flags = fcntl(sockfd, F_GETFL, 0);
-		if (flags == -1) {
-			cerr << "Can't get flags for socket" << endl;
-			exit(1);
-		}
+		// int flags = fcntl(sockfd, F_GETFL, 0);
+		// if (flags == -1) {
+		// 	cerr << "Can't get flags for socket" << endl;
+		// 	exit(1);
+		// }
 
-		flags |= O_NONBLOCK;
-		if (fcntl(sockfd, F_SETFL, flags) == -1) {
-			cerr << "Can't set socket to non-blocking mode" << endl;
-			exit(1);
-		}
+		// flags |= O_NONBLOCK;
+		// if (fcntl(sockfd, F_SETFL, flags) == -1) {
+		// 	cerr << "Can't set socket to non-blocking mode" << endl;
+		// 	exit(1);
+		// }
+
+		fcntl(sockfd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 
 		if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
 		{
@@ -207,7 +205,7 @@ int connectSockets(parceConfFile cf)
 			exit(1);
 		}
 
-		if(listen(sockfd, 1000) == -1)
+		if(listen(sockfd, 10000) == -1)
 		{
 			cerr << "Failed to listen"<< endl;
 			exit(1);
@@ -230,25 +228,32 @@ void acceptNewConnections(int sockfd)
 		if(datasocket == -1)
 		{
 			cerr << "accept error" << endl;
-			//TODO
+
 			return ;
 		}
+		struct linger linger_opt = {0, 0}; // Linger active, timeout 0
+		setsockopt(datasocket, SOL_SOCKET, SO_LINGER, &linger_opt, sizeof(linger_opt));
+
 		int optval =1 ;
 		if(setsockopt(datasocket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) == -1)
 		{
 			cerr << "set Socket Options error"<<endl;
 			return ;
 		}
-		int flags = fcntl(datasocket, F_GETFL, 0);
-		if (flags == -1) {
-			cerr << "Can't get flags for socket" << endl;
-			return ;
-		}
-		flags |= O_NONBLOCK;
-		if (fcntl(datasocket, F_SETFL, flags) == -1) {
-			cerr << "Can't set socket to non-blocking mode" << endl;
-			return ;
-		}
+		// int flags = fcntl(datasocket, F_GETFL, 0);
+		// if (flags == -1) {
+		// 	cerr << "Can't get flags for socket" << endl;
+		// 	return ;
+		// }
+		// flags |= O_NONBLOCK;
+		// if (fcntl(datasocket, F_SETFL, flags) == -1) {
+		// 	cerr << "Can't set socket to non-blocking mode" << endl;
+		// 	return ;
+		// }
+
+		fcntl(sockfd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+
+		
 		fdMapRead.insert(std::make_pair(datasocket, httpRequest(datasocket, sockfd)));
 }
 
@@ -258,9 +263,11 @@ void writeOnSocket(std::map<int, httpResponse>::iterator& it)
 {
 	int commSocket, returnNumber;
 
-	commSocket = it->first;			
+	commSocket = it->first;		
+		
+	cout << "sending chunk"<< endl;
 	returnNumber = it->second.sendChunk();
-
+	cout << "send chunk : " << returnNumber << endl;
 
 	if (returnNumber == 1)//if the socket is closed by peer or some error occured in send().
 	{
@@ -268,9 +275,10 @@ void writeOnSocket(std::map<int, httpResponse>::iterator& it)
 		deleteWriteFd.push_back(commSocket);
 	}
 	else if(returnNumber == 2)//all good in sendChunk().
-	{
+	{	
 		if(it->second.connection == true)//if the connection is on keep-alive.
 		{
+			
 			fdMapRead.insert(std::make_pair(commSocket, httpRequest(commSocket, it->second.server_socket)));
 			deleteWriteFd.push_back(commSocket);
 
@@ -285,43 +293,52 @@ void writeOnSocket(std::map<int, httpResponse>::iterator& it)
 
 void createHtmlFile() {
 	std::ofstream file;
-	file.open("404Error.html");
-	if(!file.is_open())
+	for (std::map<int, string>::iterator it = status_message.begin() ; it != status_message.end(); it++)
 	{
-		std::cerr << "default pages failed to open"<< endl;
-		exit(12);
+		if(it->first == 200)
+			continue;
+		std::ostringstream strstream;
+		strstream << it->first;
+		strstream << "Error.html";
+		file.open(strstream.str().c_str());
+		if(!file.is_open())
+		{
+			std::cerr << "default pages failed to open"<< endl;
+			exit(12);
+		}
+		file << "<!DOCTYPE html>\n"
+			<< "<html>\n"
+			<< "<head>\n"
+			<< "<title>"<< it->first <<" "<< it->second <<"</title>\n"
+			<< "<style>\n"
+			<< "body {\n"
+			<< "    font-family: Arial, sans-serif;\n"
+			<< "    background-color: #f4f4f4;\n"
+			<< "    text-align: center;\n"
+			<< "}\n"
+			<< "h1 {\n"
+			<< "    color: #333;\n"
+			<< "}\n"
+			<< "p {\n"
+			<< "    color: #777;\n"
+			<< "}\n"
+			<< "</style>\n"
+			<< "</head>\n"
+			<< "<body>\n"
+			<< "<h1>"<< it->first <<" "<< it->second <<"</h1>\n"
+			<< "<p>The requested page could not be found.</p>\n"
+			<< "</body>\n"
+			<< "</html>\n";
+
+		file.close();
 	}
-
-	file << "<!DOCTYPE html>\n"
-		 << "<html>\n"
-		 << "<head>\n"
-		 << "<title>404 Not Found</title>\n"
-		 << "<style>\n"
-		 << "body {\n"
-		 << "    font-family: Arial, sans-serif;\n"
-		 << "    background-color: #f4f4f4;\n"
-		 << "    text-align: center;\n"
-		 << "}\n"
-		 << "h1 {\n"
-		 << "    color: #333;\n"
-		 << "}\n"
-		 << "p {\n"
-		 << "    color: #777;\n"
-		 << "}\n"
-		 << "</style>\n"
-		 << "</head>\n"
-		 << "<body>\n"
-		 << "<h1>404 Not Found</h1>\n"
-		 << "<p>The requested page could not be found.</p>\n"
-		 << "</body>\n"
-		 << "</html>\n";
-
-	file.close();
 }
 
 
 void clear_maps()
 {
+	cout << "clear" << endl;
+	exit(112);
 	for (std::__1::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 	{
 		close(it->first);
@@ -341,20 +358,23 @@ int main(int __unused ac, char __unused **av, char **env)
 	envv = env;
 
 	parceConfFile cf;
-	createHtmlFile();
 	parce_conf_file(cf);
 	init_status_code();
+	createHtmlFile();
 
 	struct timeval timout;
-	timout.tv_sec = 5;
+	timout.tv_sec = 3;
 	timout.tv_usec = 0;
 	connectSockets(cf);
 	while (1)
 	{
 		debute:
 		refresh_fd_set(theFdSetRead, theFdSetWrite);
+		cout << "max = " << getMaxFd() << endl;
+		
+		cout << "=============" << endl;
 		int ret = select(getMaxFd()+1, theFdSetRead, theFdSetWrite, NULL, &timout);
-		// cout << "=============ret : " << ret << endl;
+		cout << "=============ret : " << ret << endl;
 		if(ret == -1)
 		{
 			cout << "select failed!!"<< endl;
@@ -367,10 +387,11 @@ int main(int __unused ac, char __unused **av, char **env)
 			// int i = 0;
 			for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 			{
-				// cout << "timeout for : "<< it->first << endl;
+				cout << "timeout for : "<< it->first << endl;
 				close(it->first);
 				deleteReadFd.push_back(it->first);
 			}
+			continue;
 			goto debute;
 		}
 		
@@ -378,16 +399,15 @@ int main(int __unused ac, char __unused **av, char **env)
 		{
 			if(FD_ISSET(it->first, theFdSetRead))
 			{
-				// cout << "connect" << endl;
+				cout << "connect" << endl;
 				acceptNewConnections(it->first);
-
 			}
 		}
 		for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 		{
 			if(FD_ISSET(it->first, theFdSetRead))
 			{
-				// cout << "read "<< it->first << endl;
+				cout << "read "<< it->first << endl;
 				readTheRequest(it);
 			}
 		}
@@ -396,7 +416,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		{
 			if(FD_ISSET(it->first, theFdSetWrite))
 			{
-				// cout << "write " << it->first << endl;
+				cout << "write " << it->first << endl;
 				writeOnSocket(it);
 			}
 		}
