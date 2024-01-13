@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/12 14:27:18 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/12 15:49:56 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,5 +58,5 @@ public:
 	void execute_cgi();
     // void openFile();
     void openTheAppropriateFile(string& str);
-    string    fillThePathFile(string& str);
+	string fillThePathFile(string& redirection);
 };

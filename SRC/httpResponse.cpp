@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 13:48:53 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/13 15:06:47 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,11 +71,7 @@ send a chunk of data
 return: 0 if still sending the data
 return: 1 if the connection closed by peer
 return: 2 if the data is sent successfully
-*/		file.seekg(sentData - readedData, std::ios_base::cur);
-		return 0;
-	}
-	else
-	{
+*/
 	
 int httpResponse::sendChunk()
 {
@@ -103,6 +99,11 @@ int httpResponse::sendChunk()
 			return 1;
 		}
 		if(sentData < readedData)
+				file.seekg(sentData - readedData, std::ios_base::cur);
+		return 0;
+	}
+	else
+	{
 		//all the data has been sent
 		return 2;
 	}
