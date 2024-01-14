@@ -6,13 +6,13 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 14:23:27 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/14 10:03:23 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../INC/server.hpp"
 extern std::map<int, Server> servers_sockets;
-extern char *envv;
+extern char **envv;
 
 //STATUS_CODE
 std::map<int, string> status_message;
@@ -71,15 +71,15 @@ httpResponse::~httpResponse()
 send a chunk of data 
 return: 0 if still sending the data
 return: 1 if the connection closed by peer
-return: 2 if the data is sent successfully and the connection is on keep alive mode
+return: 2 if the data is sent successfully
 */
+
 int httpResponse::sendChunk()
 {
 	std::istringstream strm(request);
 	string str;
 	strm >> str;
 	int sent_size, sentData;
-
 	//sending header in one chunk 
 	if(header_sent < header.size())
 	{
@@ -340,7 +340,7 @@ void httpResponse::setData()
 	else
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: "+ strm.str() + "\r\n\r\n";
 }
-#include "signal.h"
+#include "signal.h"//TODO: MINOR
 void	httpResponse::execute_cgi() {
 	
 	if(file.is_open())
@@ -355,7 +355,7 @@ void	httpResponse::execute_cgi() {
 		char *argv[2];
 		argv[0] = (char *)filename.c_str();
 		argv[1] = NULL;
-		if (execve(filename.c_str(), argv, NULL) == -1) {
+		if (execve(filename.c_str(), argv, envv) == -1) {
 			kill(getpid(), SIGKILL);
 		}
 	} else if (pid < 0) {

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/13 12:39:53 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/14 10:25:10 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 	Location local;
 	local.name = location_name;
 	it_data++;
+	int a = 0, b = 0, c = 0, d = 0;
 	for (;it_data != data.end(); it_data++) {
-
 		std::istringstream str(*it_data);
 		str >> token;
 		if (my_trim(*it_data).empty())
@@ -58,6 +58,7 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 		if (token == "}")
 			break ;
 		if (token == "path" && (str >> token)) {
+			a++;
 			local.path = token;
 			if (!(str >> token) || (token != ";"))
 				throw(std::runtime_error("Syntax Error ';'0"));
@@ -65,6 +66,7 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 				throw(std::runtime_error("Syntax Error 100"));
 		}
 		else if (token == "default_file" && (str >> token)) {
+			b++;
 			local.default_file = token;
 			if (!(str >> token) || (token != ";"))
 				throw(std::runtime_error("Syntax Error ';'1"));
@@ -72,6 +74,7 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 				throw(std::runtime_error("Syntax Error 100"));
 		}
 		else if (token == "methods") {
+			c++;
 			while (str >> token) {
 				if (token == ";")
 					break;
@@ -83,6 +86,7 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 				throw(std::runtime_error("Syntax Error 100"));
 		}
 		else if (token == "cgi_extension" && (str >> token)) {
+			d++;
 			local.cgi_extension = token;
 			if (!(str >> token) || (token != ";"))
 				throw(std::runtime_error("Syntax Error ';'4"));
@@ -92,6 +96,8 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 		else
 			throw(std::runtime_error("Syntax Error brackets"));
 	}
+	if (a != 1 || b > 1 || c != 1 || d != 1)
+		throw(std::runtime_error("Syntax Error in location"));
 	serv.location.push_back(local);
 }
 
@@ -105,6 +111,7 @@ void parceConfFile::fill_data() {
 		string token;
 		str >> token;
 		Server serv;
+		int a = 0, b = 0, c = 0, d = 0, e = 0, f = 0, j = 0;
 		if ((token == "server")) {
 			if (!(str >> token) || (token != "{"))
 				throw(std::runtime_error("Syntax Error in {}"));
@@ -121,7 +128,7 @@ void parceConfFile::fill_data() {
 				if (my_trim(*it_data).empty())
 					continue;
 				if (token == "listen") {
-					
+					a++;
 					while (str >> token) {
 						if (token == ";")
 							break;
@@ -133,6 +140,7 @@ void parceConfFile::fill_data() {
 						throw(std::runtime_error("Syntax Error 100"));
 				}
 				else if (token == "host" && (str >> token)) {
+					b++;
 					serv.host = token;
 					if (!(str >> token) || (token != ";"))
 						throw(std::runtime_error("Syntax Error ';'2"));
@@ -140,6 +148,7 @@ void parceConfFile::fill_data() {
 						throw(std::runtime_error("Syntax Error 100"));
 				}
 				else if (token == "directory_listing" && (str >> token)) {
+					c++;
 					if (token == "on" || token == "ON")
 						serv.directory_listing = true;
 					else if (token == "off" || token == "OFF")
@@ -153,7 +162,7 @@ void parceConfFile::fill_data() {
 						throw(std::runtime_error("Syntax Error 100"));
 				}
 				else if (token == "error_pages") {
-
+					d++;
 					while (str >> token) {
 						if (token == ";")
 							break;
@@ -165,6 +174,7 @@ void parceConfFile::fill_data() {
 						throw(std::runtime_error("Syntax Error 100"));
 				}
 				else if (token == "client_body_size" && (str >> token)) {
+					e++;
 					char *end;
 					serv.client_body_size = std::strtod(token.c_str(), &end);
 					if (!(str >> token) || (token != ";"))
@@ -173,6 +183,7 @@ void parceConfFile::fill_data() {
 						throw(std::runtime_error("Syntax Error 100"));
 				}
 				else if (token == "root" && (str >> token)) {
+					f++;
 					serv.root = token;
 					if (!(str >> token) || (token != ";"))
 						throw(std::runtime_error("Syntax Error ';'2"));
@@ -180,6 +191,7 @@ void parceConfFile::fill_data() {
 						throw(std::runtime_error("Syntax Error 100"));
 				}
 				else if (token == "server_name" && (str >> token)) {
+					j++;
 					serv.server_name = token;
 					if (!(str >> token) || (token != ";"))
 						throw(std::runtime_error("Syntax Error ';'2"));
@@ -197,6 +209,8 @@ void parceConfFile::fill_data() {
 				else
 					throw(std::runtime_error("Syntax Error brackets"));
 			}
+			if (a != 1 || b != 1 || c != 1 || d != 1 || e != 1 || f != 1 || j != 1)
+				throw(std::runtime_error("Syntax Error in server"));
 			serv.location_nb = serv.location.size();
 			server.push_back(serv);
 		}
@@ -215,6 +229,7 @@ void parceConfFile::print_data() {
 			 cout << server[i].listen[k] << ", ";
 		cout << endl;
 		cout << "host : " << server[i].host << endl;
+		cout << "server_name : " << server[i].server_name << endl;
 		cout << "client_body_size : " << server[i].client_body_size << endl;
 		cout << "error_pages : ";
 		vector<string>::iterator it = server[i].error_pages.begin();
