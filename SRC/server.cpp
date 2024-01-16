@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 15:57:36 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/14 13:59:42 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,7 +357,7 @@ int main(int __unused ac, char __unused **av, char **env)
 				// int i = 0;
 				for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 				{
-					cout << "timeout for : "<< it->first << endl;
+					// cout << "timeout for : "<< it->first << endl;
 					close(it->first);
 					deleteReadFd.push_back(it->first);
 				}
