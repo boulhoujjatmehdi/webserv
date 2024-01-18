@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/16 15:34:54 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/17 10:01:02 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ void	httpRequest::checks_() {
 			_location = servers_sockets[server_socket].location[j].name.substr(1);
 		else 
 			_location = servers_sockets[server_socket].location[j].name;
-		cout << "location is : " << location << " ----> "<< _location << endl;
+		// cout << "location is : " << location << " ----> "<< _location << endl;
 		if (location == _location)
 			loc_pos = j;
 	}

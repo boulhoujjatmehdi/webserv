@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/16 15:39:33 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/17 13:00:06 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,6 +210,10 @@ string httpResponse::fillThePathFile(string& __unused redirection)
 		if((servers_sockets[server_socket].location[i].name  == this->location))
 		{
 			classLocation = &servers_sockets[server_socket].location[i];
+			if (classLocation->return_exist) {
+				status = classLocation->return_status;	
+				return classLocation->return_url;
+			}
 			pathToFile = servers_sockets[server_socket].location[i].path + uri;
 			if (simple_uri == "")
 			{
@@ -301,8 +305,8 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 		pathToFile = fillThePathFile(redirection);
 		filename = pathToFile;
 	}
-	
-	// cout << "filename is : " << filename << " and status is : " << status << endl;
+
+	cout << "filename is : " << filename << " and status is : " << status << endl;
 	
 	open_file:
 	file.open(filename.c_str(), std::ifstream::ate|std::ifstream::binary);

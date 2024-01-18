@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/16 15:43:23 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/01/17 10:57:01 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,10 +93,30 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 			if (str >> token)
 				throw(std::runtime_error("Syntax Error 100"));
 		}
+		else if (token == "return" && (str >> token)) {
+			local.return_exist = true;
+			local.methods.push_back("GET");
+			local.methods.push_back("POST");
+			local.methods.push_back("DELETE");
+			char *tmp;
+			local.return_status = std::strtod(token.c_str(), &tmp);
+			if (!string(tmp).empty())
+				throw(std::runtime_error("Syntax Error in return status"));
+			
+			if (str >> token)
+				local.return_url = token;
+			else
+				throw(std::runtime_error("Syntax Error in return url"));
+				
+			if (!(str >> token) || (token != ";"))
+				throw(std::runtime_error("Syntax Error ';'4"));
+			if (str >> token)
+				throw(std::runtime_error("Syntax Error 100"));
+		}
 		else
 			throw(std::runtime_error("Syntax Error brackets"));
 	}
-	if (a > 1 || b > 1 || c != 1 || d != 1)
+	if (local.return_exist == false && (a > 1 || b > 1 || c != 1 || d != 1))
 		throw(std::runtime_error("Syntax Error in location"));
 	serv.location.push_back(local);
 }
@@ -282,7 +302,8 @@ void parceConfFile::check_ifdata_isnot_empty() {
 			server[i].client_body_size == -1 || server[i].location.size() == 0)
 				throw(std::runtime_error("Syntax Error in ONE of the attributes"));
 		for (int j = 0; (size_t)j < server[i].location.size();j++) {
-			if (server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_extension.empty())
+			if ((server[i].location[j].methods.size() == 0 || server[i].location[j].cgi_extension.empty()) &&
+				server[i].location[j].return_exist == false) 
 				throw(std::runtime_error("Syntax Error in ONE of the location attributes"));				
 		}
 	}
