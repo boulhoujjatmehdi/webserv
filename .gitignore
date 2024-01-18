@@ -8,5 +8,5 @@ progname
 largephoto.jpeg
 *.zip
 */*.o
-
+tmp.html
 */.*

@@ -6,7 +6,7 @@
 /*   By: eboulhou <eboulhou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/13 15:57:36 by eboulhou         ###   ########.fr       */
+/*   Updated: 2024/01/17 10:24:22 by eboulhou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,50 +158,59 @@ void refresh_fd_set(fd_set *fdRead, fd_set *fdWrite)
 int connectSockets(parceConfFile cf)
 {
 	int port;
+	string host;
 	int nbOfSockets = 0;
 
 	for (int i = 0; i < cf.server_nb ; i ++)
 	{
-		port = std::atoi(cf.server[i].listen[0].c_str());
-		int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-		if(sockfd == -1)
+		for (size_t pot = 0; pot < cf.server[i].listen.size(); pot++)
 		{
-			cerr << "Failed to Create Socket"<< endl;
-			return 1;
+			port = std::atoi(cf.server[i].listen[pot].c_str());
+			host = cf.server[i].host;
+			int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+			if(sockfd == -1)
+			{
+				cerr << "Failed to Create Socket"<< endl;
+				return 1;
+			}
+			struct sockaddr_in address;
+			// socklen_t socket_lenght  = sizeof(address);
+			bzero(&address, sizeof(struct sockaddr_in));
+			address.sin_family = AF_INET;
+			address.sin_port = htons(port);
+			inet_pton(AF_INET, host.c_str(), &(address.sin_addr));
+			memset(address.sin_zero, '\0', sizeof address.sin_zero);
+			
+			//reuse the port number after closing
+			int optval = 1;
+			if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+				cerr << "Error setting socket options" << endl;
+				continue;
+			}
+
+			fcntl(sockfd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+
+			if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
+			{
+				cerr << "\033[31mhost : ["<< host << "] and port : ["<< port <<"] failed to bind.\033[0m"<< endl;
+				continue;
+			}
+			{
+				cout << "\033[32mhost : ["<< host << "] and port : ["<< port <<"] has been binded.\033[0m"<< endl;
+			}
+			
+
+			if(listen(sockfd, 10000) == -1)
+			{
+				cerr << "Failed to listen"<< endl;
+				continue;
+			}
+
+			FD_ZERO(theFdSetRead);
+			servers_sockets[sockfd] = cf.server[i];
+
+			nbOfSockets ++;
 		}
-		struct sockaddr_in address;
-		// socklen_t socket_lenght  = sizeof(address);
-		bzero(&address, sizeof(struct sockaddr_in));
-		address.sin_family = AF_INET;
-		address.sin_port = htons(port);
-		address.sin_addr.s_addr = INADDR_ANY;
-		int optval = 1;
-		if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-			cerr << "Error setting socket options" << endl;
-			exit(1);
-		}
-
-		fcntl(sockfd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-
-		if(bind(sockfd, (struct sockaddr*)&address, sizeof(address)) == -1)
-		{
-			cerr << "Failed to Bind"<< endl;
-			exit(1);
-		}
-
-		if(listen(sockfd, 10000) == -1)
-		{
-			cerr << "Failed to listen"<< endl;
-			exit(1);
-		}
-
-		FD_ZERO(theFdSetRead);
-		servers_sockets[sockfd] = cf.server[i];
-
-		// cout <<"test this shit : " <<  servers_sockets[sockfd]->error_pages[0]<< endl;
-		// cout <<"test this shit : " << servers_sockets[sockfd]->location[0].path << endl;
-		nbOfSockets ++;
-		// fdMapRead.insert(std::make_pair(sockfd, httpRequest(-1, -1)));//TODO: check if this is the problem in case of not using goto in the main loop
 	}
 	return nbOfSockets;
 }
@@ -357,7 +366,7 @@ int main(int __unused ac, char __unused **av, char **env)
 				// int i = 0;
 				for (std::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 				{
-					cout << "timeout for : "<< it->first << endl;
+					// cout << "timeout for : "<< it->first << endl;
 					close(it->first);
 					deleteReadFd.push_back(it->first);
 				}
