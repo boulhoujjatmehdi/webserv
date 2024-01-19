@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <dirent.h>
+#include <sys/stat.h>
 #include "../parcing/parceConfFile.hpp"
 
 using std::cout;
@@ -14,7 +16,6 @@ using std::endl;
 using std::string;
 
 #define BUFFER_SIZE 4096
-
 
 class httpRequest
 {
@@ -28,11 +29,13 @@ public:
 	string hostname;
 	string port;
 	bool connection;
-	int body_size;
-	int content_length;
+	double body_size;
+	double content_length;
 	int status;
-
+    string location;
+    string simple_uri;
 	std::map<string, string> form_data;
+	string filename;
 
     const int& getSocket() const
     {
@@ -66,9 +69,9 @@ public:
 	void	extract_form_data();
 	void	checks_();
 	void	extract_uri_data();
-
-    //rachid
+	void	init_status_code();
     void    upload_files();
+	void	delete_files();//rachid
 
 
 };

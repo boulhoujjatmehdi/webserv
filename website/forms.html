@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="css/forms.css">
+    <title>GET & POST FORMS</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="signin-signup">
+            <form method="get" action="uploadthanks.html" class="sign-in-form">
+                <h2 class="title">GET form test</h2>
+                <div class="input-field">
+                    <i class="fas fa-user"></i>
+                    <input type="text" placeholder="Username">
+                </div>
+                <div class="input-field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Password">
+                </div>
+                <input type="submit" value="Submit" class="btn">
+
+            </form>
+            <form method="post" action="uploadthanks.html" class="sign-up-form">
+                <h2 class="title">POST form test</h2>
+                <div class="input-field">
+                    <i class="fas fa-user"></i>
+                    <input name="Username" type="text" placeholder="Username">
+                </div>
+                <div class="input-field">
+                    <i class="fas fa-envelope"></i>
+                    <input name="Email" type="text" placeholder="Email">
+                </div>
+                <div class="input-field">
+                    <i class="fas fa-lock"></i>
+                    <input name="Password" type="password" placeholder="Password">
+                </div>
+                <input  type="submit" value="Submit" class="btn">
+
+            </form>
+        </div>
+        <div class="panels-container">
+            <div class="panel left-panel sign-up-form" >
+                <div class="content">
+                    <h3>GET FORM</h3>
+                    <p>click here to teest get form</p>
+                    <button class="btn" id="sign-in-btn">GET FORM</button>
+                </div>
+                <img src="signin.svg" alt="" class="image">
+            </div>
+            <div class="panel right-panel sign-up-form">
+                <div class="content">
+                    <h3>POST FORM</h3>
+                    <p>click here to teest post form</p>
+                    <button class="btn" id="sign-up-btn">POST FORM</button>
+                </div>
+                <img src="signup.svg" alt="" class="image">
+            </div>
+        </div>
+    </div>
+    <script src="js/forms.js"></script>
+</body>
+
+</html>
