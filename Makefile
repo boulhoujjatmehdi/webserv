@@ -1,35 +1,30 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/12/16 11:15:12 by aachfenn          #+#    #+#              #
-#    Updated: 2024/01/06 11:26:32 by aachfenn         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+NAME = progName
 
-# SRC     = $(wildcard parcing/*.cpp)
-SRC     = $(wildcard **/*.cpp)
+SRC = $(wildcard ./SRC/*.cpp) $(wildcard ./parcing/*.cpp)
+HED = $(wildcard ./INC/*.hpp)
 
-CXXFLAGS   = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
 
-OBJS    = ${SRC:.cpp=.o}
+CXX = c++ 
+CXXFLAGS= -std=c++98 -Wall -Werror -Wextra -fsanitize=address -g
+OBJ = $(SRC:.cpp=.o)
 
-RM      = rm -f
+all: $(NAME)
 
-NAME    = exxx
+%.o:%.cpp $(HED)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-${NAME} :	${OBJS} $(wildcard *.hpp)
-		c++ ${CXXFLAGS} ${OBJS} -o ${NAME}
 
-all     : ${NAME}
 
-clean   :
-		${RM} ${OBJS}
+$(NAME): $(OBJ) 
+		$(CXX) $(CXXFLAGS) $(OBJ) -o $@
 
-fclean  : clean
-		${RM} ${NAME}
+clean:
+		rm -rf $(OBJ)
 
-re      : fclean all
+fclean: clean
+		rm -rf $(NAME)
+
+re:     fclean all
+
+run:all
+		./$(NAME)

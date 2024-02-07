@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/17 10:01:02 by aachfenn         ###   ########.fr       */
+/*   Created: 2023/12/26 10:06:31 by rennatiq          #+#    #+#             */
+/*   Updated: 2024/02/06 11:42:18 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,35 +42,16 @@ void	httpRequest::checks_() {
 	size_t start = request.find("\r\n\r\n");
 	start += 4;
 	body_size = request.size() - start;
-	// CHECK if the method is in the config file
-	int loc_pos = 0;
-	for (size_t j=0;j < servers_sockets[server_socket].location.size();j++) {
-		string _location;
-		if (servers_sockets[server_socket].location[j].name.length() > 0)
-			_location = servers_sockets[server_socket].location[j].name.substr(1);
-		else 
-			_location = servers_sockets[server_socket].location[j].name;
-		// cout << "location is : " << location << " ----> "<< _location << endl;
-		if (location == _location)
-			loc_pos = j;
-	}
-	int check = 0;
-	for (size_t i = 0;i < servers_sockets[server_socket].location[loc_pos].methods.size() ;i++) {
-		if (method == servers_sockets[server_socket].location[loc_pos].methods[i])
-			check++;
-	}
-	if (check == 0) {
-		status = 405;
-		filename = "./405Error.html";
-	}
-	////	
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		throw (std::runtime_error("error 9"));
+		
 	if (body_size > servers_sockets[this->server_socket].client_body_size) {
 		status = 413;
-		filename = "./413Error.html";
+		filename = "./413.html";
 	}
 	if (uri.length() > 2048) {
 		status = 414;
-		filename = "./414Error.html";
+		filename = "./413.html";
 	}
 }
 
@@ -145,6 +126,7 @@ void	httpRequest::parce_request() {
 	}
 	extract_form_data();
 	extract_uri_data();
+	checks_();
 	size_t sp_pos = uri.find("%20");
 	if (sp_pos != string::npos) {
 		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
@@ -155,7 +137,6 @@ void	httpRequest::parce_request() {
 		location = uri.substr(1, pos - 1);
 		simple_uri = uri.substr(pos, uri.length());
 	}
-	checks_();
 }
 
 void	httpRequest::extract_uri_data() {
@@ -195,7 +176,6 @@ void httpRequest::upload_files()
 	if (method == "POST")
 	{
 		size_t start = request.find("\r\n\r\n");
-		// cout << request.substr(0, start + 100)<< endl;
 		if (start == std::string::npos)
 			return;
 		string sup;
@@ -273,7 +253,7 @@ void httpRequest::delete_files()
 	{
 		string tmp = uri.substr(1, uri.length());
 		if (remove(tmp.c_str()) == -1)
-			throw (std::runtime_error("not found ola kra"));
+			throw (std::runtime_error("ERROR"));
 		
 		cout << "file deleted (" << tmp << ")\n";
 	}
@@ -292,15 +272,6 @@ void	httpRequest::generate_response() {
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
-		// just to see if something unexpected happens :: should be removed 
 		exit (10);
 	}
-	// cout << "uri is >> |" << uri  << "|" << endl;
-
-	// cout << first_line << endl;
-	// cout << "method is >> |" << method  << "|" << endl;
-	// cout << "http_version is >> |" << http_version  << "|" << endl;
-	// cout << "hostname is >> |" << hostname  << "|" << endl;
-	// cout << "port is >> |" << port  << "|" << endl;
-	// cout << "connection is >> |" << connection  << "|" << endl;
 }

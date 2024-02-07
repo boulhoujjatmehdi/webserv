@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/12 15:49:56 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/06 11:09:35 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include "../parcing/parceConfFile.hpp"
-
 
 
 
