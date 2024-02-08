@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/17 10:57:01 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/07 18:54:56 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,6 +189,8 @@ void parceConfFile::fill_data() {
 					e++;
 					char *end;
 					serv.client_body_size = std::strtod(token.c_str(), &end);
+					if (!string(end).empty())
+						throw(std::runtime_error("Syntax Error in client body size"));
 					if (!(str >> token) || (token != ";"))
 						throw(std::runtime_error("Syntax Error ';'4"));
 					if (str >> token)

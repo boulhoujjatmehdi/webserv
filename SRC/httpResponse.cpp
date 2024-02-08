@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/17 13:00:06 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/08 10:07:21 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,8 +277,6 @@ string httpResponse::fillThePathFile(string& __unused redirection)
 					listDirectoriesAsHtml(pathToFile);
 					pathToFile = "./tmp.html";
 				}
-					
-				// cout << "SECOND" << endl;
 				break ;
 			}
 		}
