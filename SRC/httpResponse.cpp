@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/02/08 10:07:21 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/10 10:34:33 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,21 @@ void listDirectoriesAsHtml(string path) {
 	my_file << "</ul>\n</body>\n</html>";
 	closedir(dir);
 }
-
+void httpResponse::delete_files()
+{
+    std::vector<string>::iterator it = std::find(classLocation->methods.begin(), classLocation->methods.end(), "DELETE");
+    if (method == "DELETE")
+    {
+    	if (it != classLocation->methods.end()) {
+        string tmp = uri.substr(1, uri.length());
+        if (remove(tmp.c_str()) == -1)
+            throw (std::runtime_error("not found ola kra"));
+		} else {
+			std::cout << "Element not found\n";
+		}
+        
+    }
+}
 
 string httpResponse::fillThePathFile(string& __unused redirection)
 {
@@ -290,8 +304,14 @@ string httpResponse::fillThePathFile(string& __unused redirection)
 		cout << "FOURTH" << endl;
 	}
 	endd:
-	cout << "path to file :: "<< pathToFile << endl;
-	return pathToFile;
+
+	
+	string tmp = classLocation->path + location + "/upload/";
+    upload_files(tmp);
+    delete_files();
+    
+    cout << "path to file :: "<< pathToFile << endl;
+    return pathToFile;
 }
 
 
@@ -302,6 +322,7 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 	if (this->status == 200) {
 		pathToFile = fillThePathFile(redirection);
 		filename = pathToFile;
+		cout << "-----------";
 	}
 
 	cout << "filename is : " << filename << " and status is : " << status << endl;

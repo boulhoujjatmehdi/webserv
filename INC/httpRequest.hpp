@@ -70,8 +70,8 @@ public:
 	void	checks_();
 	void	extract_uri_data();
 	void	init_status_code();
-    void    upload_files();
-	void	delete_files();//rachid
+    void    upload_files(string up_name);
+	
 
 
 };

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/17 10:01:02 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/08 15:06:57 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,7 +190,7 @@ void	httpRequest::extract_uri_data() {
 	}
 }
 
-void httpRequest::upload_files()
+void httpRequest::upload_files(string up_name)
 {
 	if (method == "POST")
 	{
@@ -252,7 +252,7 @@ void httpRequest::upload_files()
 			if (filename.empty())
 				return;
 			std::ofstream file;
-			file.open("./upload/" + filename);
+			file.open(up_name + filename);
 			start = 0;
 			for (int i = 0; i < 4; ++i)
 			{
@@ -267,25 +267,14 @@ void httpRequest::upload_files()
 	}
 }
 
-void httpRequest::delete_files()
-{
-	if (method == "DELETE")
-	{
-		string tmp = uri.substr(1, uri.length());
-		if (remove(tmp.c_str()) == -1)
-			throw (std::runtime_error("not found ola kra"));
-		
-		cout << "file deleted (" << tmp << ")\n";
-	}
-}
+
 
 void	httpRequest::generate_response() {
 	// cout << request << endl;
 
 	try {
 		parce_request();
-		upload_files();//TODO: RETURN TO THROW
-		delete_files();
+		
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;

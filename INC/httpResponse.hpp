@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/12 15:49:56 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/08 15:06:01 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,4 +59,5 @@ public:
     // void openFile();
     void openTheAppropriateFile(string& str);
 	string fillThePathFile(string& redirection);
+	void	delete_files();//rachid
 };
