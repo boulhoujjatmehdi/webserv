@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/02/07 18:54:56 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/14 11:40:16 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,25 +93,31 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 			if (str >> token)
 				throw(std::runtime_error("Syntax Error 100"));
 		}
-		else if (token == "return" && (str >> token)) {
+		else if (token == "redirect" && (str >> token)) {
 			local.return_exist = true;
 			local.methods.push_back("GET");
 			local.methods.push_back("POST");
 			local.methods.push_back("DELETE");
-			char *tmp;
-			local.return_status = std::strtod(token.c_str(), &tmp);
-			if (!string(tmp).empty())
-				throw(std::runtime_error("Syntax Error in return status"));
+			local.return_status = 301;
+			// char *tmp;
+			// local.return_status = std::strtod(token.c_str(), &tmp);
+			// if (!string(tmp).empty())
+			// 	throw(std::runtime_error("Syntax Error in return status"));
 			
-			if (str >> token)
-				local.return_url = token;
-			else
-				throw(std::runtime_error("Syntax Error in return url"));
-				
+			local.return_url = token;
 			if (!(str >> token) || (token != ";"))
 				throw(std::runtime_error("Syntax Error ';'4"));
 			if (str >> token)
 				throw(std::runtime_error("Syntax Error 100"));
+			// if (str >> token)
+			// 	local.return_url = token;
+			// else
+			// 	throw(std::runtime_error("Syntax Error in return url"));
+				
+			// if (!(str >> token) || (token != ";"))
+			// 	throw(std::runtime_error("Syntax Error ';'4"));
+			// if (str >> token)
+			// 	throw(std::runtime_error("Syntax Error 100"));
 		}
 		else
 			throw(std::runtime_error("Syntax Error brackets"));
