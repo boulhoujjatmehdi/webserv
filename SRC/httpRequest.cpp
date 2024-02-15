@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/02/14 11:26:27 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/14 15:32:38 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ void	httpRequest::checks_() {
 }
 
 void	httpRequest::extract_form_data() {
-	cout << "body_size --> " << body_size << endl;
 	if (body_size != 0) {
 		size_t start = request.find("\r\n\r\n");
 		if (start == string::npos)
@@ -83,7 +82,7 @@ void	httpRequest::extract_form_data() {
 		start += 4;
 		string data = request.substr(start, request.length());
 		setenv("QUERY_STRING", data.c_str(), 1);
-		cout << "data is --> " << data << endl;
+		// cout << "data is --> " << data << endl;
 	}
 
 }

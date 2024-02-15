@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/02/14 11:40:16 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/15 10:53:18 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -346,6 +346,14 @@ void parceConfFile::check_ifdata_is_valid() {
 					throw(std::runtime_error("Duplicate Location"));
 				}
 			}
+		}
+		for (size_t j = 0; j < (server[i].error_pages.size() - 1) ;j++) {
+			char *tmp;
+			double nb = std::strtod(server[i].error_pages[j].c_str(), &tmp);
+			if (!string(tmp).empty())
+				throw(std::runtime_error("Syntax Error in Error Page"));
+			if (nb < 300 || nb > 599)
+				throw(std::runtime_error("The value must be between 300 and 599"));
 		}
 	}
 	 

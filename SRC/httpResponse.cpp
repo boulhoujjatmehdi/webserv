@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/02/10 10:34:33 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/15 11:01:15 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,18 +18,46 @@ extern char **envv;
 std::map<int, string> status_message;
 
 void init_status_code() {
-	status_message[200] = "OK";
-	status_message[301] = "Moved Permanently";
-	status_message[400] = "Bad Request";
-	status_message[401] = "Unauthorized";
-	status_message[403] = "Forbidden";
-	status_message[404] = "Not Found";
-	status_message[405] = "Method Not Allowed";
-	status_message[408] = "Request Timeout";
-	status_message[413] = "Request Entity Too Large";
-	status_message[414] = "Request-URI Too Long";
-	status_message[500] = "Internal Server Error";
-	status_message[501] = "Not Implemented";
+    status_message[100] = "Continue";
+    status_message[101] = "Switching Protocols";
+    status_message[200] = "OK";
+    status_message[201] = "Created";
+    status_message[202] = "Accepted";
+    status_message[203] = "Non-Authoritative Information";
+    status_message[204] = "No Content";
+    status_message[205] = "Reset Content";
+    status_message[206] = "Partial Content";
+    status_message[300] = "Multiple Choices";
+    status_message[301] = "Moved Permanently";
+    status_message[302] = "Found";
+    status_message[303] = "See Other";
+    status_message[304] = "Not Modified";
+    status_message[305] = "Use Proxy";
+    status_message[307] = "Temporary Redirect";
+    status_message[400] = "Bad Request";
+    status_message[401] = "Unauthorized";
+    status_message[402] = "Payment Required";
+    status_message[403] = "Forbidden";
+    status_message[404] = "Not Found";
+    status_message[405] = "Method Not Allowed";
+    status_message[406] = "Not Acceptable";
+    status_message[407] = "Proxy Authentication Required";
+    status_message[408] = "Request Timeout";
+    status_message[409] = "Conflict";
+    status_message[410] = "Gone";
+    status_message[411] = "Length Required";
+    status_message[412] = "Precondition Failed";
+    status_message[413] = "Request Entity Too Large";
+    status_message[414] = "Request-URI Too Long";
+    status_message[415] = "Unsupported Media Type";
+    status_message[416] = "Requested Range Not Satisfiable";
+    status_message[417] = "Expectation Failed";
+    status_message[500] = "Internal Server Error";
+    status_message[501] = "Not Implemented";
+    status_message[502] = "Bad Gateway";
+    status_message[503] = "Service Unavailable";
+    status_message[504] = "Gateway Timeout";
+    status_message[505] = "HTTP Version Not Supported";
 }
 
 httpResponse::httpResponse(const httpResponse& obj): httpRequest(obj)
@@ -310,7 +338,7 @@ string httpResponse::fillThePathFile(string& __unused redirection)
     upload_files(tmp);
     delete_files();
     
-    cout << "path to file :: "<< pathToFile << endl;
+    // cout << "path to file :: "<< pathToFile << endl;
     return pathToFile;
 }
 
@@ -322,7 +350,13 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 	if (this->status == 200) {
 		pathToFile = fillThePathFile(redirection);
 		filename = pathToFile;
-		cout << "-----------";
+	}
+	for(size_t i = 0 ; (i < (servers_sockets[server_socket].error_pages.size() - 1)); i++)
+	{
+		if (this->status == std::atoi(servers_sockets[server_socket].error_pages[i].c_str())) {
+			filename = servers_sockets[server_socket].error_pages.back();
+			cout << "------> filename is : " << filename << " and status is : " << servers_sockets[server_socket].error_pages[i] << endl;	
+		}
 	}
 
 	cout << "filename is : " << filename << " and status is : " << status << endl;
@@ -332,7 +366,7 @@ void httpResponse::openTheAppropriateFile(string& redirection)
 	if(!file.is_open() || isDirectory(filename))
 	{
 		status = 404;
-		filename = servers_sockets[server_socket].error_pages[0];
+		filename = "./404Error.html";
 		if(file.is_open())
 			file.close();
 		goto open_file;
