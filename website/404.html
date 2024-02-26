@@ -1,18 +1,41 @@
-<!-- 404.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Page Nottttt Found</title>
+    <title>404 Error</title>
     <style>
         body {
-            text-align: center;
-            padding: 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .error {
+            display: flex;
+            font-size: 40em;
+            align-items: center;
             font-family: Arial, sans-serif;
+        }
+        
+        #zero {
+            color: red;
+        }
+        
+        h5 {
+            margin-top: 20px;
         }
     </style>
 </head>
+
 <body>
-    <h1>404</h1>
-    <p>Sorry, the page you are looking for could not be found.</p>
+    <div class="error">
+        <span>4</span>
+        <span id="zero">0</span>
+        <span>4</span>
+    </div>
+    <h2>THE PAGE YOU REQUESTED COULD NOT FOUND</h2>
 </body>
+
 </html>

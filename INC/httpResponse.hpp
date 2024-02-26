@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/02/06 11:09:35 by rennatiq         ###   ########.fr       */
+/*   Updated: 2024/02/24 10:56:02 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include "../parcing/parceConfFile.hpp"
+
 
 
 
@@ -58,4 +59,7 @@ public:
     // void openFile();
     void openTheAppropriateFile(string& str);
 	string fillThePathFile(string& redirection);
+	void	delete_files();//rachid
+
+    char **cgi_envatment(char **envv);
 };

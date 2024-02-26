@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/26 10:06:31 by rennatiq          #+#    #+#             */
-/*   Updated: 2024/02/06 11:42:18 by rennatiq         ###   ########.fr       */
+/*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
+/*   Updated: 2024/02/26 10:07:22 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	server_socket = obj.server_socket;
 	request = obj.request;
 	method = obj.method;
+	content_type = obj.content_type;
 	uri = obj.uri;
 	http_version = obj.http_version;
 	hostname = obj.hostname;
@@ -39,52 +40,52 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 
 void	httpRequest::checks_() {
 
-	size_t start = request.find("\r\n\r\n");
-	start += 4;
-	body_size = request.size() - start;
-	if (method != "GET" && method != "POST" && method != "DELETE")
-		throw (std::runtime_error("error 9"));
-		
+	// size_t start = request.find("\r\n\r\n");
+	// start += 4;
+	// body_size = request.size() - start;
+	// CHECK if the method is in the config file
+	int loc_pos = 0;
+	for (size_t j=0;j < servers_sockets[server_socket].location.size();j++) {
+		string _location;
+		if (servers_sockets[server_socket].location[j].name.length() > 0)
+			_location = servers_sockets[server_socket].location[j].name.substr(1);
+		else 
+			_location = servers_sockets[server_socket].location[j].name;
+		// cout << "location is : " << location << " ----> "<< _location << endl;
+		if (location == _location)
+			loc_pos = j;
+	}
+	int check = 0;
+	for (size_t i = 0;i < servers_sockets[server_socket].location[loc_pos].methods.size() ;i++) {
+		if (method == servers_sockets[server_socket].location[loc_pos].methods[i])
+			check++;
+	}
+	if (check == 0) {
+		status = 405;
+		filename = "./405Error.html";
+	}
+	////	
 	if (body_size > servers_sockets[this->server_socket].client_body_size) {
 		status = 413;
-		filename = "./413.html";
+		filename = "./413Error.html";
 	}
 	if (uri.length() > 2048) {
 		status = 414;
-		filename = "./413.html";
+		filename = "./414Error.html";
 	}
 }
 
 void	httpRequest::extract_form_data() {
-	
-	size_t start = request.find("\r\n\r\n");
-	if (start == string::npos)
-		throw (std::runtime_error("find failed"));
-	start += 4;
-	string data = request.substr(start, request.length());
-	size_t pos = 0;
-	size_t pos_1;
-	size_t pos_2;
-	for (;;) {
-		pos_1 = data.find("=", pos);
-		if (pos_1 == string::npos)
-			break;
-		pos_2 = data.find("&", pos_1);
-		if (pos_2 == string::npos)
-			pos_2 = data.length();
-		form_data[data.substr(pos, pos_1 - pos)] = data.substr(pos_1 + 1, pos_2 - pos_1 - 1);
-		pos = pos_2 + 1;
-		if (pos >= data.length())
-			break ;
+	if (body_size != 0) {
+		size_t start = request.find("\r\n\r\n");
+		if (start == string::npos)
+			throw (std::runtime_error("find failed"));
+		start += 4;
+		string data = request.substr(start, request.length());
+		setenv("QUERY_STRING", data.c_str(), 1);
+		// cout << "data is --> " << data << endl;
 	}
-	
-	// cout << "this is the body : (" << data << ")" << endl;
-	// if (form_data.size() > 0) {
-	// 	cout << "DATA passed "<< method << " : (" ;
-	// 	for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
-	// 		cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
-	// 	}
-	// }
+
 }
 
 void	httpRequest::parce_request() {
@@ -124,9 +125,32 @@ void	httpRequest::parce_request() {
 		if (request.substr(pos_1, pos_2 - pos_1) == "keep-alive")
 			connection = true;
 	}
+	{
+		if (request.find("Content-Type") != string::npos) {
+
+			size_t start = request.find("Content-Type");
+			start += 14;
+			size_t pos = request.find("\r", start);
+			if (pos == string::npos)
+				throw (std::runtime_error("find failed"));
+			
+			this->content_type = request.substr(start, pos - start);
+			// size_t pos_1 = content_type.find(";");
+			// if (pos_1 != string::npos) {
+				
+			// 	content_type = content_type.substr(0, pos_1);
+			// }
+		}
+	}
+	{
+		size_t start = request.find("\r\n\r\n");
+		if (start == string::npos)
+			throw (std::runtime_error("find failed"));
+		start += 4;
+		body_size = request.size() - start;
+	}
 	extract_form_data();
 	extract_uri_data();
-	checks_();
 	size_t sp_pos = uri.find("%20");
 	if (sp_pos != string::npos) {
 		uri = uri.substr(0, sp_pos) + " " + uri.substr(sp_pos + 3, uri.length());
@@ -137,45 +161,27 @@ void	httpRequest::parce_request() {
 		location = uri.substr(1, pos - 1);
 		simple_uri = uri.substr(pos, uri.length());
 	}
+	checks_();
 }
 
 void	httpRequest::extract_uri_data() {
-	
 	if (uri.find("?") != string::npos) {
 		size_t start = uri.find("?");
 		if (start == string::npos)
 			throw (std::runtime_error("find failed"));
+		 query_string = uri.substr(start + 1, uri.length());
 		uri = uri.substr(0, start);
-		start += 1;
-		string data = uri.substr(start, uri.length());
-		size_t pos = 0;
-		size_t pos_1;
-		size_t pos_2;
-		for (;;) {
-			pos_1 = data.find("=", pos);
-			if (pos_1 == string::npos)
-				break;
-			pos_2 = data.find("&", pos_1);
-			if (pos_2 == string::npos)
-				pos_2 = data.length();
-			form_data[data.substr(pos, pos_1 - pos)] = data.substr(pos_1 + 1, pos_2 - pos_1 - 1);
-			pos = pos_2 + 1;
-			if (pos >= data.length())
-				break ;
-		}
-		
-		// cout << method <<" DATA : ";
-		// for (std::map<string,string>::iterator it = form_data.begin();it != form_data.end();it++) {
-		// 	cout << "'" << it->first << "'" << "===" << "'" << it->second << "'" << endl;
-		// }
+		setenv("QUERY_STRING",query_string.c_str(), 1);
+
 	}
 }
 
-void httpRequest::upload_files()
+void httpRequest::upload_files(string up_name)
 {
 	if (method == "POST")
 	{
 		size_t start = request.find("\r\n\r\n");
+		// cout << request.substr(0, start + 100)<< endl;
 		if (start == std::string::npos)
 			return;
 		string sup;
@@ -232,7 +238,7 @@ void httpRequest::upload_files()
 			if (filename.empty())
 				return;
 			std::ofstream file;
-			file.open("./upload/" + filename);
+			file.open(up_name + filename);
 			start = 0;
 			for (int i = 0; i < 4; ++i)
 			{
@@ -247,31 +253,29 @@ void httpRequest::upload_files()
 	}
 }
 
-void httpRequest::delete_files()
-{
-	if (method == "DELETE")
-	{
-		string tmp = uri.substr(1, uri.length());
-		if (remove(tmp.c_str()) == -1)
-			throw (std::runtime_error("ERROR"));
-		
-		cout << "file deleted (" << tmp << ")\n";
-	}
-}
+
 
 void	httpRequest::generate_response() {
 	// cout << request << endl;
 
 	try {
 		parce_request();
-		upload_files();//TODO: RETURN TO THROW
-		delete_files();
+		
 	}
 	catch (std::exception &e) {
 		cout << e.what() << endl;
 	}
 	catch (...) {
 		cout << "Errorrrrrrrrrrrrrrrr" << endl;
+		// just to see if something unexpected happens :: should be removed 
 		exit (10);
 	}
+	// cout << "uri is >> |" << uri  << "|" << endl;
+
+	// cout << first_line << endl;
+	// cout << "method is >> |" << method  << "|" << endl;
+	// cout << "http_version is >> |" << http_version  << "|" << endl;
+	// cout << "hostname is >> |" << hostname  << "|" << endl;
+	// cout << "port is >> |" << port  << "|" << endl;
+	// cout << "connection is >> |" << connection  << "|" << endl;
 }
