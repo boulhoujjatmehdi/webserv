@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/02/26 10:14:48 by rennatiq         ###   ########.fr       */
+/*   Updated: 2024/02/26 11:21:05 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -434,7 +434,7 @@ char **httpResponse::cgi_envatment(char **en)
 	venv.push_back("REQUEST_METHOD=" + method);
 	// venv.push_back("REQUEST_URI=" + uri);
 	// venv.push_back("SCRIPT_NAME=" + uri);
-	// venv.push_back("SCRIPT_FILENAME=" + uri);
+	venv.push_back("SCRIPT_FILENAME=" + uri);
 	// venv.push_back("SERVER_NAME=" + hostname);
 	// venv.push_back("SERVER_PORT=" + port);// port lifih daba ?
 	venv.push_back("SERVER_PROTOCOL=" + http_version);
@@ -471,22 +471,34 @@ void httpResponse::execute_cgi()
 	{
 		if (method == "POST")
 		{
+			
 			size_t start = request.find("\r\n\r\n");
 			if (start != std::string::npos)
 			{
-				int pipfd[2];
+				// int pipfd[2];
 				start += 4;
 				std::string body = request.substr(start);
-				if (pipe(pipfd) == -1) 
-					throw (std::runtime_error("pipe"));
-
-				ssize_t bytes_written = write(pipfd[1], body.c_str(), body.size());
-				if (bytes_written == -1 || static_cast<size_t>(bytes_written) != body.size())
-					throw(std::runtime_error("write"));
-				close(pipfd[1]);
-				if (dup2(pipfd[0], 0) == -1)
+				// if (pipe(pipfd) == -1) 
+				// 	throw (std::runtime_error("pipe"));
+				std::ofstream file("/tmp/body.txt");
+				if (file.is_open()) {
+					file << body;
+					file.close();
+				} else {
+					std::cout << "Unable to open file";
+				}
+				int f = open("/tmp/body.txt", O_RDONLY);
+				if (dup2(f, 0) == -1)
 					std::cerr << "dup2 failed";
-				close(pipfd[0]);
+				close(f);
+				// ssize_t bytes_written = write(pipfd[1], body.c_str(), body.size());
+				// cout << "tblloka hna \n";
+				// if (bytes_written == -1 || static_cast<size_t>(bytes_written) != body.size())
+					// throw(std::runtime_error("write"));
+				// close(pipfd[1]);
+				// if (dup2(pipfd[0], 0) == -1)
+					// std::cerr << "dup2 failed";
+				// close(pipfd[0]);
 			}
 			else
 				throw(std::runtime_error("Unable to find the start of the body"));
@@ -512,7 +524,7 @@ void httpResponse::execute_cgi()
 		int monitor_process_id = fork();
 		if (monitor_process_id == 0)
 		{
-			sleep(5);
+			sleep(3600);
 			// cout << "---------------()---------------\n";
 			kill(pid, SIGTERM);
 			kill(getpid(), SIGKILL);
