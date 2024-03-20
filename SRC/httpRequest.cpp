@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/02/26 10:07:22 by rennatiq         ###   ########.fr       */
+/*   Updated: 2024/03/20 18:14:22 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 {
 	location  = obj.location;
 	simple_uri = obj.simple_uri;
+	query_string = obj.query_string;
 	socket = obj.socket;
 	content_length = obj.content_length;
 	server_socket = obj.server_socket;

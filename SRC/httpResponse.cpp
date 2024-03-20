@@ -6,7 +6,7 @@
 /*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/02/26 11:21:05 by rennatiq         ###   ########.fr       */
+/*   Updated: 2024/03/20 18:12:01 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -427,6 +427,8 @@ char **httpResponse::cgi_envatment(char **en)
 		venv.push_back("QUERY_STRING=" + query_string);
 	else
 		venv.push_back("QUERY_STRING=");
+
+	cout << "its" << query_string << endl;
 	// venv.push_back("REMOTE_ADDR=");
 	// venv.push_back("REMOTE_HOST=");
 	// venv.push_back("REMOTE_IDENT=");
@@ -475,11 +477,8 @@ void httpResponse::execute_cgi()
 			size_t start = request.find("\r\n\r\n");
 			if (start != std::string::npos)
 			{
-				// int pipfd[2];
 				start += 4;
 				std::string body = request.substr(start);
-				// if (pipe(pipfd) == -1) 
-				// 	throw (std::runtime_error("pipe"));
 				std::ofstream file("/tmp/body.txt");
 				if (file.is_open()) {
 					file << body;
@@ -491,19 +490,12 @@ void httpResponse::execute_cgi()
 				if (dup2(f, 0) == -1)
 					std::cerr << "dup2 failed";
 				close(f);
-				// ssize_t bytes_written = write(pipfd[1], body.c_str(), body.size());
-				// cout << "tblloka hna \n";
-				// if (bytes_written == -1 || static_cast<size_t>(bytes_written) != body.size())
-					// throw(std::runtime_error("write"));
-				// close(pipfd[1]);
-				// if (dup2(pipfd[0], 0) == -1)
-					// std::cerr << "dup2 failed";
-				// close(pipfd[0]);
 			}
 			else
 				throw(std::runtime_error("Unable to find the start of the body"));
 		
 		}
+		
 
 		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		dup2(filefd, 1);
@@ -520,7 +512,7 @@ void httpResponse::execute_cgi()
 		cout << "Error fork" << endl;
 	}
 	else
-	{
+	{ 
 		int monitor_process_id = fork();
 		if (monitor_process_id == 0)
 		{
@@ -540,13 +532,13 @@ void httpResponse::execute_cgi()
 			{
 				// cout << "---------------501 error---------------\n";
 				this->status = 501;
-				filename = "./501.html";
+				filename = "./501Error.html";
 			}
 			else if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM))
 			{
 				// cout << "---------------408 error---------------\n";
 				this->status = 408;
-				filename = "./408.html";
+				filename = "./408Error.html";
 			}
 			else
 				filename = "./cgi.html";

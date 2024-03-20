@@ -37,23 +37,7 @@ print("  </style>")
 
 print("</head>")
 print("<body>")
-print("<h2>Submitted Form Data:</h2>")
+print("<h2>Submitted post method Data:</h2>")
 print("<p><strong>Name:</strong> " + str(name) + "</p>")
 print("<p><strong>Email:</strong> " + str(email) + "</p>")
 print("<p><strong>Message:</strong> " + str(message) + "</p>")
-
-
-if 'uploadedfile' in form:
-    upload = form['uploadedfile']
-    if upload.filename:
-        file_path = os.path.join('./upload', upload.filename)
-        with open(file_path, 'wb') as file:
-            chunk = upload.file.read(1024)
-            while chunk:
-                file.write(chunk)
-                chunk = upload.file.read(1024)
-        print("<h2>Upload Successfully</h2>")
-    else:
-        print("<h2>No PDF selected.</h2>")
-else:
-    print("<h2>PDF upload failed.</h2>")

@@ -7,7 +7,7 @@
 </head>
 <body>
     <style>
-        body {
+body {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -18,9 +18,6 @@
 }
 
 .form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     width: 300px;
     padding: 20px;
     border: 1px solid #ccc;
@@ -30,9 +27,21 @@
     background-color: #f8f9fa;
 }
 
-.form-input {
-    margin-bottom: 20px;
+.form-label {
     font-size: 1em;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box; /* Add this line */
 }
 
 .form-submit {
@@ -44,18 +53,20 @@
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s ease;
-    width: fit-content;
 }
 
 .form-submit:hover {
     background-color: #0056b3;
 }
-
     </style>
-    <form enctype="multipart/form-data" action="./cgi/upload.py" name="uploadedfile" method="post" class="form">
-        <input type="file" name="uploadedfile" class="form-input" />
-        <input type="submit" value="Upload" class="form-submit" />
+    <form enctype="multipart/form-data" action="./cgi/get.py"  method="get" class="form">
+        <label for="name" class="form-label">Name:</label><br>
+        <input type="text" id="name" name="name" class="form-input"><br>
+        <label for="email" class="form-label">Email:</label><br>
+        <input type="text" id="email" name="email" class="form-input"><br>
+        <label for="message" class="form-label">Message:</label><br>
+        <textarea id="message" name="message" class="form-input"></textarea><br>
+        <input type="submit" value="Submit" class="form-submit">
     </form>
-    
 </body>
 </html>
