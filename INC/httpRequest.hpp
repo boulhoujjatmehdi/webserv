@@ -36,6 +36,9 @@ public:
     string simple_uri;
 	std::map<string, string> form_data;
 	string filename;
+    string content_type;
+
+    string query_string;
 
     const int& getSocket() const
     {

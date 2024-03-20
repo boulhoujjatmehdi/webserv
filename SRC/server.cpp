@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/01/18 14:38:54 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/02/26 10:42:41 by rennatiq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -349,7 +349,7 @@ int main(int __unused ac, char __unused **av, char **env)
 		timout.tv_sec = 3;
 		timout.tv_usec = 0;
 		connectSockets(cf);
-				while (1)
+		while (1)
 		{
 			refresh_fd_set(theFdSetRead, theFdSetWrite);
 		

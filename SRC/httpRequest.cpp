@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/02/14 15:32:38 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/20 19:46:55 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	server_socket = obj.server_socket;
 	request = obj.request;
 	method = obj.method;
+	content_type = obj.content_type;
 	uri = obj.uri;
 	http_version = obj.http_version;
 	hostname = obj.hostname;
@@ -34,6 +35,7 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 	connection = obj.connection;
 	status = obj.status;
 	filename = obj.filename;
+	query_string = obj.query_string;
 	return *this;
 }
 
@@ -125,6 +127,23 @@ void	httpRequest::parce_request() {
 			connection = true;
 	}
 	{
+		if (request.find("Content-Type") != string::npos) {
+
+			size_t start = request.find("Content-Type");
+			start += 14;
+			size_t pos = request.find("\r", start);
+			if (pos == string::npos)
+				throw (std::runtime_error("find failed"));
+			
+			this->content_type = request.substr(start, pos - start);
+			// size_t pos_1 = content_type.find(";");
+			// if (pos_1 != string::npos) {
+				
+			// 	content_type = content_type.substr(0, pos_1);
+			// }`
+		}
+	}
+	{
 		size_t start = request.find("\r\n\r\n");
 		if (start == string::npos)
 			throw (std::runtime_error("find failed"));
@@ -151,9 +170,9 @@ void	httpRequest::extract_uri_data() {
 		size_t start = uri.find("?");
 		if (start == string::npos)
 			throw (std::runtime_error("find failed"));
-		string data = uri.substr(start + 1, uri.length());
+		 query_string = uri.substr(start + 1, uri.length());
 		uri = uri.substr(0, start);
-		setenv("QUERY_STRING",data.c_str(), 1);
+		setenv("QUERY_STRING",query_string.c_str(), 1);
 
 	}
 }

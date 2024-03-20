@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:53 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/01/17 10:38:26 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/20 15:45:06 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class Location {
 	string default_file;
 	vector<string> methods;
 	string cgi_extension;
+	string alias;
 
 	int return_exist;
 	int return_status;

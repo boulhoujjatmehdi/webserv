@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 11:27:37 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/02/15 10:53:18 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/20 15:51:26 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 	Location local;
 	local.name = location_name;
 	it_data++;
-	int a = 0, b = 0, c = 0, d = 0;
+	int a = 0, b = 0, c = 0, d = 0, e = 0;
 	for (;it_data != data.end(); it_data++) {
 		std::istringstream str(*it_data);
 		str >> token;
@@ -93,6 +93,14 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 			if (str >> token)
 				throw(std::runtime_error("Syntax Error 100"));
 		}
+		else if (token == "alias" && (str >> token)) {
+			e++;
+			local.alias = token;
+			if (!(str >> token) || (token != ";"))
+				throw(std::runtime_error("Syntax Error ';'4"));
+			if (str >> token)
+				throw(std::runtime_error("Syntax Error 100"));
+		}
 		else if (token == "redirect" && (str >> token)) {
 			local.return_exist = true;
 			local.methods.push_back("GET");
@@ -122,7 +130,7 @@ void	parceConfFile::my_location(Server &serv, string location_name) {
 		else
 			throw(std::runtime_error("Syntax Error brackets"));
 	}
-	if (local.return_exist == false && (a > 1 || b > 1 || c != 1 || d != 1))
+	if (local.return_exist == false && (a > 1 || b > 1 || c != 1 || d != 1 || e > 1))
 		throw(std::runtime_error("Syntax Error in location"));
 	serv.location.push_back(local);
 }
@@ -317,6 +325,16 @@ void parceConfFile::check_ifdata_isnot_empty() {
 	}
 }
 
+bool slash_counter(string name) {
+	int count = 0;
+    for (size_t i = 0; i < name.size(); i++) {
+        if (name[i] == '/') {
+			count++;
+        }
+    }
+    return count > 1;
+}
+
 void parceConfFile::check_ifdata_is_valid() {
 
 	char *tmp;
@@ -337,6 +355,9 @@ void parceConfFile::check_ifdata_is_valid() {
 			}
 			if (check > 0)
 				throw(std::runtime_error("Syntax Error in the location METHODS"));
+			//check if the location name is valid
+			if (slash_counter(server[i].location[j].name))
+				throw(std::runtime_error("Syntax Error in the location NAME"));
 		}
 		for (size_t j = 0; j < server[i].location.size(); j++) {
 
