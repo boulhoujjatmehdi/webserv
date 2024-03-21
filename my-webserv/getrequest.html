@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="../assets/logo.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <!-- <link rel="stylesheet" href="style.css"> -->
+  <style>
+    body {
+        /* margin: 180; */
+        padding: 0;
+        margin-top: 10%;
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        transition: background-color 0.5s, color 0.5s;
+      }
+  
+      h1 {
+        color: #020b12;
+        transition: color 1.5s;
+      }
+  
+      a {
+        background-color: #ffffff;
+        color: #30575B;
+        width: 200px;
+        height: 40px;
+        border: 2px solid #3498db;
+        border-radius: 800px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+      }
+  
+      a:hover {
+        text-decoration: none;
+        background-color: #3498db;
+        color: #fff;
+      }
+  
+      .container {
+        text-align: center;
+        background-color: #fff;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        /* margin-top: 180px; */
+        transition: background-color 0.5s, color 0.2s;
+      }
+  
+      form {
+        max-width: 1000px;
+        margin: 0 auto;
+        width: 80%;
+      }
+  
+      .form-legend {
+        font-size: 24px;
+        color: #3498db;
+        margin-bottom: 10px;
+        margin: 15px 0;
+        font-size: 18px;
+        color: #333;
+        transition: color 1.5s;
+      }
+  
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+      }
+  
+      input[type="file"],
+      input[type="text"],
+      input[type="email"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 2px solid #3498db;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+  
+      input[type="submit"] {
+        background-color: #ffffff;
+        color: #30575B;
+        width: 250px;
+        height: 40px;
+        border: 2px solid #3498db;
+        border-radius: 80px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+      }
+  
+      input[type="submit"]:hover {
+        background-color: #30575B;
+        color: #fff;
+      }
+  
+      .centered-link {
+        text-decoration: none;
+        color: #3498db;
+        font-weight: bold;
+        transition: color 0.5s;
+        display: inline-block;
+        padding: 10px;
+        border: 2px solid #3498db;
+        border-radius: 8px;
+        margin: 5px;
+      }
+  
+      .centered-link:hover {
+        text-decoration: none;
+        background-color: #3498db;
+        color: #fff;
+      }
+    </style>
+    <title>Webserv</title>
+</head>
+<body>
+    <h1>Hello world</h1>
+    <form enctype="multipart/form-data" action="./get.py"  method="post">
+        <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name"><br>
+    <label for="email">Email:</label><br>
+    <input type="text" id="email" name="email"><br>
+    <label for="email">message:</label><br>
+    <input type="text"  name="message"><br>
+
+    <label for="uploadedfile">Select a PDF:</label>
+    <input type="file" id="uploadedfile" name="uploadedfile" accept=".pdf"><br><br>
+   
+
+
+    
+    <input type="submit" value="Submit">
+
+    </form>
+
+  
+</body>
+</html>

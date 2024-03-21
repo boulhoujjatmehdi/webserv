@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/03/20 17:03:24 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/21 15:33:48 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,10 +230,10 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 	// string rest, directory;
 
 	get_directory(uri, simple_uri, location);
-	cout << "uri 			:("<< uri << ")"<< endl;
-	cout << "name			:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
-	cout << "simple uri		:("<< simple_uri << ")"<< endl;
-	cout << "location		:("<< location << ")"<< endl ;
+	// cout << "uri 			:("<< uri << ")"<< endl;
+	// cout << "name			:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
+	// cout << "simple uri		:("<< simple_uri << ")"<< endl;
+	// cout << "location		:("<< location << ")"<< endl ;
 	if (location == "/" && simple_uri.empty())
 		simple_uri = "/";
 
@@ -248,11 +248,9 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 				status = classLocation->return_status;
 				return classLocation->return_url;
 			}
-			//-----------
-			cout <<  "==============" << uri << endl ;
 			if (!servers_sockets[server_socket].location[i].alias.empty()) {
 				uri = servers_sockets[server_socket].location[i].alias + simple_uri;
-				cout << "alias found\n";
+				cout << "-------------> alias found\n";
 			}
 			pathToFile = servers_sockets[server_socket].location[i].path + uri;
 			if (simple_uri == "")
@@ -316,7 +314,6 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 						status = 301;
 						redirection = "Location: " + uri + "/\r\n";
 						pathToFile = "./404Error.html";
-						// cout << "THIRD" << endl;
 						goto endd;
 					}
 				}
@@ -335,10 +332,10 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 
 		status = 404;
 		pathToFile = "./404Error.html";
-		cout << "FOURTH" << endl;
+		// cout << "FOURTH" << endl;
 	}
-endd:
-string tmp = classLocation->path + location + "/upload/";
+	endd:
+	string tmp = classLocation->path + location + "/upload/";
 	upload_files(tmp);
 	delete_files();
 
@@ -349,7 +346,6 @@ string tmp = classLocation->path + location + "/upload/";
 void httpResponse::openTheAppropriateFile(string &redirection)
 {
 	string pathToFile;
-
 	if (this->status == 200)
 	{
 		pathToFile = fillThePathFile(redirection);
@@ -421,10 +417,9 @@ void httpResponse::setData()
 		header = "HTTP/1.1 " + my_status + " " + status_message[status] + "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: " + strm.str() + "\r\n\r\n";
 }
 
-char **httpResponse::cgi_envatment(char **en)
+char **httpResponse::cgi_envatment(char __unused **en)
 {
 	std::vector<string> venv;
-	(void)en;
 	venv.push_back("CONTENT_LENGTH=" + std::to_string(content_length));
 	venv.push_back("CONTENT_TYPE=" + content_type);
 	venv.push_back("GATEWAY_INTERFACE=CGI/1.1");
@@ -462,7 +457,7 @@ char **httpResponse::cgi_envatment(char **en)
 	return env;
 }
 
-#include "signal.h" //TODO: MINOR
+#include "signal.h"
 void httpResponse::execute_cgi()
 {
 
