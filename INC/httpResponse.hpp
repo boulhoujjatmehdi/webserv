@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rennatiq <rennatiq@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:44:52 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/02/24 10:56:02 by rennatiq         ###   ########.fr       */
+/*   Updated: 2024/03/22 14:14:14 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,10 +56,9 @@ public:
     int sendChunk();
     void setData();
 	void execute_cgi();
-    // void openFile();
     void openTheAppropriateFile(string& str);
 	string fillThePathFile(string& redirection);
-	void	delete_files();//rachid
+	void	delete_files();
 
     char **cgi_envatment(char **envv);
 };

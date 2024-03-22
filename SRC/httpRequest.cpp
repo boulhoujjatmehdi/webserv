@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 10:06:31 by aachfenn          #+#    #+#             */
-/*   Updated: 2024/03/20 19:46:55 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/21 20:36:43 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,6 @@ httpRequest& httpRequest::operator=(const httpRequest& obj)
 
 void	httpRequest::checks_() {
 
-	// size_t start = request.find("\r\n\r\n");
-	// start += 4;
-	// body_size = request.size() - start;
 	// CHECK if the method is in the config file
 	int loc_pos = 0;
 	for (size_t j=0;j < servers_sockets[server_socket].location.size();j++) {
@@ -52,7 +49,6 @@ void	httpRequest::checks_() {
 			_location = servers_sockets[server_socket].location[j].name.substr(1);
 		else 
 			_location = servers_sockets[server_socket].location[j].name;
-		// cout << "location is : " << location << " ----> "<< _location << endl;
 		if (location == _location)
 			loc_pos = j;
 	}
@@ -84,7 +80,6 @@ void	httpRequest::extract_form_data() {
 		start += 4;
 		string data = request.substr(start, request.length());
 		setenv("QUERY_STRING", data.c_str(), 1);
-		// cout << "data is --> " << data << endl;
 	}
 
 }
@@ -136,11 +131,6 @@ void	httpRequest::parce_request() {
 				throw (std::runtime_error("find failed"));
 			
 			this->content_type = request.substr(start, pos - start);
-			// size_t pos_1 = content_type.find(";");
-			// if (pos_1 != string::npos) {
-				
-			// 	content_type = content_type.substr(0, pos_1);
-			// }`
 		}
 	}
 	{
@@ -182,7 +172,6 @@ void httpRequest::upload_files(string up_name)
 	if (method == "POST")
 	{
 		size_t start = request.find("\r\n\r\n");
-		// cout << request.substr(0, start + 100)<< endl;
 		if (start == std::string::npos)
 			return;
 		string sup;
@@ -271,12 +260,4 @@ void	httpRequest::generate_response() {
 		// just to see if something unexpected happens :: should be removed 
 		exit (10);
 	}
-	// cout << "uri is >> |" << uri  << "|" << endl;
-
-	// cout << first_line << endl;
-	// cout << "method is >> |" << method  << "|" << endl;
-	// cout << "http_version is >> |" << http_version  << "|" << endl;
-	// cout << "hostname is >> |" << hostname  << "|" << endl;
-	// cout << "port is >> |" << port  << "|" << endl;
-	// cout << "connection is >> |" << connection  << "|" << endl;
 }

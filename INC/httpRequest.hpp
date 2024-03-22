@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   httpRequest.hpp                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/22 14:10:05 by aachfenn          #+#    #+#             */
+/*   Updated: 2024/03/22 14:14:00 by aachfenn         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <iostream>
@@ -59,11 +71,6 @@ public:
     httpRequest(int socket , int serverSocket): socket(socket), server_socket(serverSocket), request(""), connection(false), content_length(-1), status(200)
     {
     }
-    // httpRequest(): request(""), connection(false)
-    // {
-
-    //     cout << "server_socket3 : "<< server_socket << endl;
-    // }
     
     ~httpRequest(){}
     

@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/13 09:43:03 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/03/21 15:33:48 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/22 14:09:19 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,6 @@ httpResponse::httpResponse(const httpRequest &obj) : httpRequest(obj), header_se
 void get_directory(const string &uri, string &rest, string &directory)
 {
 	string suri = uri;
-	// cout << "uri			:("<< uri << ")"<< endl;
 	directory = suri.substr(1);
 	size_t foundSlash;
 
@@ -150,9 +149,6 @@ void get_directory(const string &uri, string &rest, string &directory)
 	}
 	else
 		directory = suri;
-
-	// cout << "rest			:("<< rest << ")"<< endl;
-	// cout << "directory		:("<< directory << ")"<< endl << endl;
 }
 
 bool isDirectory(const std::string &path)
@@ -223,12 +219,7 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 {
 	string pathToFile;
 	classLocation = NULL;
-	// cout << "empty : " << location.size() << "    " << location << endl;
-
 	location = '/' + location;
-
-	// string rest, directory;
-
 	get_directory(uri, simple_uri, location);
 	// cout << "uri 			:("<< uri << ")"<< endl;
 	// cout << "name			:("<< servers_sockets[server_socket].location[0].name << ")"<< endl;
@@ -250,28 +241,25 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 			}
 			if (!servers_sockets[server_socket].location[i].alias.empty()) {
 				uri = servers_sockets[server_socket].location[i].alias + simple_uri;
-				cout << "-------------> alias found\n";
 			}
 			pathToFile = servers_sockets[server_socket].location[i].path + uri;
 			if (simple_uri == "")
 			{
 			redirect:
-				// cout << "_-------redirected_-------\n";
+				// REDIRECTION
 				if (access(uri.c_str(), F_OK) == -1)
 				{
 					status = 301;
 					redirection = "Location: " + uri + "/\r\n";
 					pathToFile = "./404Error.html";
-					// cout << "THIRD" << endl;
 					goto endd;
 				}
 			}
 			if (simple_uri == "/")
 			{
-				// cout << "--------\n";
 				if (access((pathToFile + classLocation->default_file).c_str(), F_OK) == -1 && servers_sockets[server_socket].directory_listing == true)
 				{
-					// cout << "---auto index-----\n";
+					// AUTO INDEXING
 					listDirectoriesAsHtml(pathToFile);
 					pathToFile = "./tmp.html";
 				}
@@ -280,7 +268,6 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 			}
 			else
 			{
-				// cout << "pathToFile -----------> " << pathToFile << endl;
 				if ((access(uri.c_str(), F_OK) == -1 && !endwith(uri, "/") && isDirectory(pathToFile)))
 					goto redirect;
 				if (isDirectory(pathToFile) && servers_sockets[server_socket].directory_listing == true)
@@ -288,10 +275,8 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 					listDirectoriesAsHtml(pathToFile);
 					pathToFile = "./tmp.html";
 				}
-				/////////
 				goto endd;
 			}
-			// cout << "FIRST" << endl;
 			break;
 		}
 	}
@@ -326,20 +311,14 @@ string httpResponse::fillThePathFile(string &__unused redirection)
 			}
 		}
 	}
-	if (pathToFile.empty())
-	{
-		// error_404:
-
+	if (pathToFile.empty()) {
 		status = 404;
 		pathToFile = "./404Error.html";
-		// cout << "FOURTH" << endl;
 	}
 	endd:
 	string tmp = classLocation->path + location + "/upload/";
 	upload_files(tmp);
 	delete_files();
-
-	// cout << "path to file :: "<< pathToFile << endl;
 	return pathToFile;
 }
 
@@ -356,11 +335,11 @@ void httpResponse::openTheAppropriateFile(string &redirection)
 		if (this->status == std::atoi(servers_sockets[server_socket].error_pages[i].c_str()))
 		{
 			filename = servers_sockets[server_socket].error_pages.back();
-			cout << "------> filename is : " << filename << " and status is : " << servers_sockets[server_socket].error_pages[i] << endl;
+			// cout << "------> filename is : " << filename << " and status is : " << servers_sockets[server_socket].error_pages[i] << endl;
 		}
 	}
 
-	cout << "filename is : " << filename << " and status is : " << status << endl;
+	// cout << "filename is : " << filename << " and status is : " << status << endl;
 
 open_file:
 	file.open(filename.c_str(), std::ifstream::ate | std::ifstream::binary);
@@ -428,16 +407,8 @@ char **httpResponse::cgi_envatment(char __unused **en)
 		venv.push_back("QUERY_STRING=" + query_string);
 	else
 		venv.push_back("QUERY_STRING=");
-	// venv.push_back("REMOTE_ADDR=");
-	// venv.push_back("REMOTE_HOST=");
-	// venv.push_back("REMOTE_IDENT=");
-	// venv.push_back("REMOTE_USER=");
 	venv.push_back("REQUEST_METHOD=" + method);
-	// venv.push_back("REQUEST_URI=" + uri);
-	// venv.push_back("SCRIPT_NAME=" + uri);
 	venv.push_back("SCRIPT_FILENAME=" + uri);
-	// venv.push_back("SERVER_NAME=" + hostname);
-	// venv.push_back("SERVER_PORT=" + port);// port lifih daba ?
 	venv.push_back("SERVER_PROTOCOL=" + http_version);
 	venv.push_back("SERVER_SOFTWARE=webserv/1.0");
 	venv.push_back("REDIRECT_STATUS=200");
@@ -463,7 +434,7 @@ void httpResponse::execute_cgi()
 
 	if (file.is_open())
 		file.close();
-	cout << "CGI IS DETECTED\n";
+	// cout << "CGI IS DETECTED\n";
 	int filefd = 0;
 	int pid = fork();
 	char **env;
@@ -472,15 +443,11 @@ void httpResponse::execute_cgi()
 	{
 		if (method == "POST")
 		{
-			
 			size_t start = request.find("\r\n\r\n");
 			if (start != std::string::npos)
 			{
-				// int pipfd[2];
 				start += 4;
 				std::string body = request.substr(start);
-				// if (pipe(pipfd) == -1) 
-				// 	throw (std::runtime_error("pipe"));
 				std::ofstream file("/tmp/body.txt");
 				if (file.is_open()) {
 					file << body;
@@ -492,18 +459,9 @@ void httpResponse::execute_cgi()
 				if (dup2(f, 0) == -1)
 					std::cerr << "dup2 failed";
 				close(f);
-				// ssize_t bytes_written = write(pipfd[1], body.c_str(), body.size());
-				// cout << "tblloka hna \n";
-				// if (bytes_written == -1 || static_cast<size_t>(bytes_written) != body.size())
-					// throw(std::runtime_error("write"));
-				// close(pipfd[1]);
-				// if (dup2(pipfd[0], 0) == -1)
-					// std::cerr << "dup2 failed";
-				// close(pipfd[0]);
 			}
 			else
 				throw(std::runtime_error("Unable to find the start of the body"));
-		
 		}
 
 		filefd = open("cgi.html", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -525,8 +483,7 @@ void httpResponse::execute_cgi()
 		int monitor_process_id = fork();
 		if (monitor_process_id == 0)
 		{
-			sleep(3600);
-			// cout << "---------------()---------------\n";
+			sleep(10);
 			kill(pid, SIGTERM);
 			kill(getpid(), SIGKILL);
 		}
@@ -539,15 +496,15 @@ void httpResponse::execute_cgi()
 			kill(monitor_process_id, SIGKILL);
 			if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL))
 			{
-				// cout << "---------------501 error---------------\n";
-				this->status = 501;
-				filename = "./501.html";
+				// EXECVE FAILED 
+				this->status = 500;
+				filename = "./500Error.html";
 			}
 			else if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGTERM))
 			{
-				// cout << "---------------408 error---------------\n";
+				// TIMEOUT
 				this->status = 408;
-				filename = "./408.html";
+				filename = "./408Error.html";
 			}
 			else
 				filename = "./cgi.html";
@@ -558,11 +515,13 @@ void httpResponse::execute_cgi()
 	}
 	delete[] env;
 
-	cout << "CGI filename is : " << filename << " and status is : " << status << endl;
 	file.open(filename.c_str(), std::ifstream::ate | std::ifstream::binary);
 	if (!file.is_open())
 	{
-		filename = servers_sockets[server_socket].error_pages[0];
+		status = 404;
+		filename = "./404Error.html";
+		if (file.is_open())
+			file.close();
 		file.open(filename.c_str(), std::ifstream::ate | std::ifstream::binary);
 		if (!file.is_open())
 			throw(std::runtime_error("Coudn't open the Error Page"));

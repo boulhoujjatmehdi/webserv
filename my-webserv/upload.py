@@ -8,6 +8,8 @@ if 'uploadedfile' in form:
     upload = form['uploadedfile']
     if upload.filename:
         file_path = os.path.join('./upload', upload.filename)
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
         with open(file_path, 'wb') as file:
             chunk = upload.file.read(1024)
             while chunk:
