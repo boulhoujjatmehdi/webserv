@@ -6,7 +6,7 @@
 /*   By: aachfenn <aachfenn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/29 09:45:04 by eboulhou          #+#    #+#             */
-/*   Updated: 2024/03/21 20:21:05 by aachfenn         ###   ########.fr       */
+/*   Updated: 2024/03/22 14:36:36 by aachfenn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ int getMaxFd()
 	int tmp = -1;
     if(fdMapRead.size() >= 1)
 	{
-		//PARSE: TRY TO USE RBEGIN() INSTEAD OF END
 		std::map<int, httpRequest>::iterator it = fdMapRead.end();
 		it--;
 		if( it->first > tmp)
@@ -272,8 +271,7 @@ void createHtmlFile() {
 		file.open(strstream.str().c_str());
 	if(!file.is_open())
 	{
-		std::cerr << "default pages failed to open"<< endl;
-		exit(12);
+		throw(std::runtime_error("HTMLS failed to create"));
 	}
 	file << "<!DOCTYPE html>\n"
 		 << "<html>\n"
@@ -306,8 +304,6 @@ void createHtmlFile() {
 
 void clear_maps()
 {
-	cout << "clear" << endl;
-	exit(112);
 	for (std::__1::map<int, httpRequest>::iterator it = fdMapRead.begin(); it != fdMapRead.end(); it++)
 	{
 		close(it->first);
